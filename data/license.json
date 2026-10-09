@@ -1,0 +1,140 @@
+{
+ "fr": [
+  {
+   "n": 1,
+   "h": "Licence d'utilisation",
+   "p": [
+    "Le présent logiciel est un freeware : il est gratuit. Vous êtes autorisé à l'installer et à l'utiliser gratuitement, pour un usage personnel comme professionnel (y compris commercial), sur autant d'appareils que vous le souhaitez."
+   ]
+  },
+  {
+   "n": 2,
+   "h": "Ce qui est interdit",
+   "p": [
+    "Sans autorisation écrite préalable de l'auteur, il est interdit de :",
+    "a) vendre, louer, sous-licencier ou faire payer l'accès au logiciel ;",
+    "b) redistribuer le logiciel, modifié ou non, sur un autre site ou support (merci de partager plutôt le lien vers la page officielle) ;",
+    "c) modifier, décompiler ou désassembler le logiciel, sauf dans la mesure où la loi impérative l'autorise expressément ;",
+    "d) retirer ou altérer les mentions de droit d'auteur."
+   ]
+  },
+  {
+   "n": 3,
+   "h": "Propriété",
+   "p": [
+    "Le logiciel est concédé sous licence, il n'est pas vendu. L'auteur conserve tous les droits de propriété intellectuelle sur le logiciel et son code source, qui n'est pas fourni. Les créations, fichiers et résultats que vous produisez avec le logiciel vous appartiennent entièrement."
+   ]
+  },
+  {
+   "n": 4,
+   "h": "Aucune garantie",
+   "p": [
+    "Le logiciel est fourni « tel quel », sans garantie d'aucune sorte, notamment de fonctionnement continu, d'absence d'erreur ou d'adéquation à un usage particulier. Vous l'utilisez sous votre responsabilité : pensez à sauvegarder vos données."
+   ]
+  },
+  {
+   "n": 5,
+   "h": "Limitation de responsabilité",
+   "p": [
+    "Dans la mesure permise par la loi, l'auteur ne peut être tenu responsable des dommages directs ou indirects liés à l'utilisation ou à l'impossibilité d'utiliser le logiciel. Cette limitation ne s'applique pas aux cas où la loi interdit de l'exclure."
+   ]
+  },
+  {
+   "n": 6,
+   "h": "Versions et évolutions",
+   "p": [
+    "Les présentes conditions s'appliquent à la version du logiciel avec laquelle elles sont fournies. L'auteur peut publier de futures versions sous d'autres conditions, y compris payantes, sans effet sur les droits dont vous disposez pour les versions déjà obtenues. Aucun support ni mise à jour n'est garanti."
+   ]
+  },
+  {
+   "n": 7,
+   "h": "Composants tiers",
+   "p": [
+    "Le logiciel peut contenir des composants tiers soumis à leurs propres licences, mentionnés dans le fichier THIRD-PARTY-NOTICES lorsqu'il est présent."
+   ]
+  },
+  {
+   "n": 8,
+   "h": "Résiliation",
+   "p": [
+    "Tout manquement à ces conditions met fin automatiquement à votre droit d'utiliser le logiciel."
+   ]
+  },
+  {
+   "n": 9,
+   "h": "Droit applicable",
+   "p": [
+    "Cette licence est soumise au droit français, sous réserve des règles impératives de protection des consommateurs applicables dans votre pays de résidence."
+   ]
+  }
+ ],
+ "en": [
+  {
+   "n": 1,
+   "h": "Licence to use",
+   "p": [
+    "This software is freeware: it is free of charge. You may install and use it free of charge, for personal as well as professional (including commercial) purposes, on as many devices as you wish."
+   ]
+  },
+  {
+   "n": 2,
+   "h": "What is not allowed",
+   "p": [
+    "Without the author's prior written permission, you may not:",
+    "a) sell, rent, sublicense or charge for access to the software;",
+    "b) redistribute the software, modified or not, on another website or medium (please share the link to the official page instead);",
+    "c) modify, decompile or disassemble the software, except to the extent expressly permitted by mandatory law;",
+    "d) remove or alter copyright notices."
+   ]
+  },
+  {
+   "n": 3,
+   "h": "Ownership",
+   "p": [
+    "The software is licensed, not sold. The author retains all intellectual property rights in the software and its source code, which is not provided. The works, files and results you create with the software belong entirely to you."
+   ]
+  },
+  {
+   "n": 4,
+   "h": "No warranty",
+   "p": [
+    "The software is provided \"as is\", without warranty of any kind, including uninterrupted operation, absence of errors or fitness for a particular purpose. You use it at your own risk: please back up your data."
+   ]
+  },
+  {
+   "n": 5,
+   "h": "Limitation of liability",
+   "p": [
+    "To the extent permitted by law, the author shall not be liable for any direct or indirect damages arising from the use of, or the inability to use, the software. This limitation does not apply where the law prohibits excluding liability."
+   ]
+  },
+  {
+   "n": 6,
+   "h": "Versions and changes",
+   "p": [
+    "These terms apply to the version of the software they are supplied with. The author may release future versions under different terms, including paid terms, without affecting the rights you hold in versions you have already obtained. No support or updates are guaranteed."
+   ]
+  },
+  {
+   "n": 7,
+   "h": "Third-party components",
+   "p": [
+    "The software may include third-party components under their own licences, listed in the THIRD-PARTY-NOTICES file where present."
+   ]
+  },
+  {
+   "n": 8,
+   "h": "Termination",
+   "p": [
+    "Any breach of these terms automatically terminates your right to use the software."
+   ]
+  },
+  {
+   "n": 9,
+   "h": "Governing law",
+   "p": [
+    "This licence is governed by French law, subject to the mandatory consumer protection rules applicable in your country of residence."
+   ]
+  }
+ ]
+}
