@@ -58,7 +58,7 @@
       "webUrl": "",
       "releasePrefix": "",
       "featured": false,
-      "isNew": false,
+      "isNew": true,
       "status": ""
     }
   ]
