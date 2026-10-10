@@ -115,6 +115,7 @@ function boot() {
   window.addEventListener("hashchange", onHash);
   app.addEventListener("click", function (e) { var a = e.target.closest && e.target.closest("a[data-dl]"); if (a) setTimeout(thanks, 400); });
   lang = l; sel.value = l; stat(); route();
+  var ig = document.getElementById("ig"); if (S.instagramUrl) { ig.href = S.instagramUrl; ig.hidden = false; }
 }
 get("data/site.json").then(function (s) {
   S = s;
