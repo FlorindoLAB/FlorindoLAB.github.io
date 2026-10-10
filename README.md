@@ -29,3 +29,15 @@ Dans le dossier : `python -m http.server`, puis http://localhost:8000.
 
 ## À personnaliser
 `data/site.json` : dépôt des Releases et lien de dons (Ko-fi).
+
+## Modifier le site sans toucher au code (panneau d'administration)
+Adresse : https://florindolab.com/admin/ (Sveltia CMS, qui modifie les fichiers du dépôt à ta place).
+1. GitHub > Settings > Developer settings > Personal access tokens > Fine-grained tokens > Generate new token. Dépôt : uniquement `FlorindoLAB.github.io`. Permission : Contents = Read and write. Durée : 90 jours (à renouveler).
+2. Sur /admin/, choisis la connexion par jeton (token) et colle-le. Garde ce jeton secret.
+3. Tu peux alors : modifier les textes du site, ajouter ou modifier un outil, coller le lien d'une vidéo YouTube/Vimeo, cocher « à la une » ou « Nouveau », renseigner le lien Instagram.
+Chaque enregistrement crée une modification dans le dépôt ; le site se met à jour en une minute environ.
+Si le dépôt du site porte un autre nom, corrige la ligne `repo` dans `admin/config.yml`. Ajouter une catégorie dans la liste ne suffit pas : ajoute-la aussi aux options de « Catégories » dans `admin/config.yml`.
+
+## Nouveautés
+- Pop-up de remerciement à chaque téléchargement (textes modifiables, lien Instagram dans les réglages).
+- Fiche d'outil : description, vidéo YouTube/Vimeo (par langue), badge « Nouveau », bloc « À la une » sur l'accueil.

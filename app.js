@@ -14,6 +14,7 @@ function note(s) { s = (s || "").replace(/\s*\n+\s*/g, " ").trim(); return s.len
 function tags(x) {
   var c = (x.categories || []).map(function (id) { var k = T.categories.filter(function (y) { return y.id === id; })[0]; return '<span class="tag cat">' + esc(k ? loc(k) : id) + "</span>"; });
   var p = (x.platforms || []).map(function (id) { return '<span class="tag">' + esc(t("p_" + id)) + "</span>"; });
+  if (x.isNew) c.unshift('<span class="tag new">' + esc(t("new")) + "</span>");
   if (x.status === "soon") p.push('<span class="tag soon">' + esc(t("soon")) + "</span>");
   return '<div class="tags">' + c.concat(p).join("") + "</div>";
 }
@@ -24,7 +25,7 @@ function row(x) {
 }
 function home() {
   var list = T.tools.filter(function (x) { return cat === "all" || (x.categories || []).indexOf(cat) > -1; });
-  app.innerHTML = '<div class="hero"><div><h1>' + esc(t("hero_title")) + "</h1><p>" + esc(t("hero_text")) + '</p><a class="btn main" href="#/tools">' + esc(t("see_tools")) + '</a><a class="btn" href="#/support">' + esc(t("support_project")) + '</a></div><figure class="frame" style="margin:0">' + HERO.replace("<svg ", '<svg aria-label="' + esc(t("hero_alt")) + '" ') + "</figure></div>" +
+  app.innerHTML = '<div class="hero"><div><h1>' + esc(t("hero_title")) + "</h1><p>" + esc(t("hero_text")) + '</p><a class="btn main" href="#/tools">' + esc(t("see_tools")) + '</a><a class="btn" href="#/support">' + esc(t("support_project")) + '</a></div><figure class="frame" style="margin:0">' + HERO.replace("<svg ", '<svg aria-label="' + esc(t("hero_alt")) + '" ') + "</figure></div>" + feat() +
     '<section class="sec" id="tools-sec"><h2>' + esc(t("tools")) + '</h2><p class="lead">' + esc(t("tools_lead")) + '</p><div class="chips" role="group">' + chip("all", t("all")) + T.categories.map(function (c) { return chip(c.id, loc(c)); }).join("") + "</div>" +
     (list.length ? list.map(row).join("") : '<p class="empty">' + esc(t("empty")) + "</p>") + "</section>";
   app.querySelectorAll(".chip").forEach(function (b) { b.onclick = function () { cat = b.getAttribute("data-f"); home(); }; });
@@ -38,21 +39,48 @@ function fill(box, x, all) {
   if (!rs.length) { box.innerHTML = '<p class="empty">' + esc(t("no_release")) + "</p>"; return; }
   var r = rs[0];
   var rows = rs.map(function (q) {
-    return "<tr><td>" + esc(q.tag_name.slice(p.length)) + "</td><td>" + esc(dt(q.published_at)) + "</td><td>" + esc(note(q.body)) + "</td><td>" + q.assets.map(function (a) { return '<a href="' + esc(a.browser_download_url) + '">' + esc(a.name) + "</a>"; }).join("<br>") + "</td></tr>";
+    return "<tr><td>" + esc(q.tag_name.slice(p.length)) + "</td><td>" + esc(dt(q.published_at)) + "</td><td>" + esc(note(q.body)) + "</td><td>" + q.assets.map(function (a) { return '<a data-dl href="' + esc(a.browser_download_url) + '">' + esc(a.name) + "</a>"; }).join("<br>") + "</td></tr>";
   }).join("");
   box.innerHTML = '<div class="dl-head"><div><h2>' + esc(t("latest")) + " " + esc(r.tag_name.slice(p.length)) + '</h2><p class="ver">' + esc(dt(r.published_at)) + "</p></div><div>" +
-    r.assets.map(function (a) { return '<a class="btn main" href="' + esc(a.browser_download_url) + '">' + esc(a.name) + " (" + sz(a.size) + ")</a>"; }).join("") + "</div></div>" +
+    r.assets.map(function (a) { return '<a class="btn main" data-dl href="' + esc(a.browser_download_url) + '">' + esc(a.name) + " (" + sz(a.size) + ")</a>"; }).join("") + "</div></div>" +
     (rs.length > 1 ? "<details><summary>" + esc(t("history")) + '</summary><div class="scroll"><table><thead><tr><th>' + esc(t("version")) + "</th><th>" + esc(t("date")) + "</th><th>" + esc(t("notes")) + "</th><th>" + esc(t("files")) + "</th></tr></thead><tbody>" + rows + "</tbody></table></div></details>" : "");
 }
 function tool(id) {
   var x = T.tools.filter(function (y) { return y.id === id; })[0];
   if (!x) { location.hash = "#/"; return; }
-  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><h1 class="tt">' + esc(loc(x.name)) + "</h1>" + tags(x) + '<p class="lead">' + esc(loc(x.summary)) + "</p>" +
+  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><h1 class="tt">' + esc(loc(x.name)) + "</h1>" + tags(x) + '<p class="lead">' + esc(loc(x.summary)) + "</p>" + body(x) +
     (x.webUrl ? '<p><a class="btn main" href="' + esc(x.webUrl) + '">' + esc(t("open_web")) + "</a></p>" : "") +
     (x.releasePrefix ? '<div class="dl" id="dl"><p>' + esc(t("loading")) + "</p></div>" : "") +
     '<p class="lic"><a href="#/license">' + esc(t("license_link")) + "</a></p>";
   var box = document.getElementById("dl");
   if (box) releases().then(function (all) { if (box.isConnected) fill(box, x, all); }).catch(function () { if (box.isConnected) box.innerHTML = '<p class="empty">' + esc(t("load_error")) + "</p>"; });
+}
+function feat() {
+  var f = T.tools.filter(function (x) { return x.featured; });
+  if (!f.length) return "";
+  return '<section class="sec feat"><h2>' + esc(t("featured")) + "</h2>" + f.map(function (x) {
+    return '<article class="fi"><div><h3><a href="#/tool/' + esc(x.id) + '">' + esc(loc(x.name)) + "</a></h3>" + tags(x) + "<p>" + esc(loc(x.summary)) + '</p></div><a class="btn main" href="#/tool/' + esc(x.id) + '">' + esc(t(x.status === "soon" ? "soon" : "open")) + "</a></article>";
+  }).join("") + "</section>";
+}
+function vid(u) {
+  var m = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/.exec(u || "");
+  if (m) return "https://www.youtube-nocookie.com/embed/" + m[1];
+  m = /vimeo\.com\/(\d+)/.exec(u || "");
+  return m ? "https://player.vimeo.com/video/" + m[1] : "";
+}
+function body(x) {
+  var v = x.video && typeof x.video === "object" ? loc(x.video) : x.video, u = vid(v), d = loc(x.description);
+  return (d ? d.replace(/\r/g, "").split(/\n\s*\n/).map(function (q) { return "<p>" + esc(q.trim()) + "</p>"; }).join("") : "") +
+    (u ? '<div class="vid"><iframe src="' + esc(u) + '" title="' + esc(loc(x.name)) + '" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>' : "");
+}
+function thanks() {
+  var d = document.getElementById("thx");
+  if (!d) { d = document.createElement("dialog"); d.id = "thx"; document.body.appendChild(d); d.addEventListener("click", function (e) { if (e.target === d) d.close(); }); }
+  if (d.open) return;
+  d.innerHTML = "<h2>" + esc(t("thanks_title")) + "</h2><p>" + esc(t("thanks_text")) + "</p><p>" + esc(t("thanks_free")) + '</p><div class="acts"><a class="btn main" href="' + esc(S.donateUrl) + '" target="_blank" rel="noopener">' + esc(t("coffee")) + "</a>" +
+    (S.instagramUrl ? '<a class="btn" href="' + esc(S.instagramUrl) + '" target="_blank" rel="noopener">' + esc(t("follow_ig")) + "</a>" : "") + '<button type="button" class="btn" id="thx-x">' + esc(t("close")) + "</button></div>";
+  d.querySelector("#thx-x").onclick = function () { d.close(); };
+  if (d.showModal) d.showModal(); else d.setAttribute("open", "");
 }
 function license() {
   get("data/license.json").then(function (d) {
@@ -85,6 +113,7 @@ function boot() {
   sel.innerHTML = S.languages.map(function (c) { return '<option value="' + esc(c) + '">' + esc(L[c].lang_name) + "</option>"; }).join("");
   sel.onchange = function () { lang = sel.value; try { localStorage.setItem("lang", lang); } catch (e) {} stat(); route(); };
   window.addEventListener("hashchange", onHash);
+  app.addEventListener("click", function (e) { var a = e.target.closest && e.target.closest("a[data-dl]"); if (a) setTimeout(thanks, 400); });
   lang = l; sel.value = l; stat(); route();
 }
 get("data/site.json").then(function (s) {

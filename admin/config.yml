@@ -1,0 +1,173 @@
+backend:
+  name: github
+  repo: FlorindoLAB/FlorindoLAB.github.io
+  branch: main
+media_folder: assets/uploads
+public_folder: /assets/uploads
+collections:
+  - name: outils
+    label: "Outils et catégories"
+    files:
+      - name: tools
+        label: "Liste des outils"
+        file: data/tools.json
+        fields:
+          - label: "Catégories"
+            name: categories
+            widget: list
+            summary: "{{fields.id}}"
+            fields:
+              - {label: "Identifiant (minuscules, sans espace)", name: id, widget: string}
+              - {label: "Nom en français", name: fr, widget: string}
+              - {label: "Nom en anglais", name: en, widget: string}
+          - label: "Outils"
+            name: tools
+            widget: list
+            summary: "{{fields.id}}"
+            fields:
+              - {label: "Identifiant (minuscules, sans espace)", name: id, widget: string}
+              - label: "Nom"
+                name: name
+                widget: object
+                fields:
+                  - {label: Français, name: fr, widget: string}
+                  - {label: English, name: en, widget: string}
+              - label: "Résumé (une ou deux phrases)"
+                name: summary
+                widget: object
+                fields:
+                  - {label: Français, name: fr, widget: text}
+                  - {label: English, name: en, widget: text}
+              - label: "Description détaillée (sauter une ligne entre les paragraphes)"
+                name: description
+                widget: object
+                required: false
+                fields:
+                  - {label: Français, name: fr, widget: text, required: false}
+                  - {label: English, name: en, widget: text, required: false}
+              - label: "Vidéo explicative (lien YouTube ou Vimeo)"
+                name: video
+                widget: object
+                required: false
+                fields:
+                  - {label: Français, name: fr, widget: string, required: false}
+                  - {label: English, name: en, widget: string, required: false}
+              - {label: "Catégories", name: categories, widget: select, multiple: true, options: [{label: "Vidéo", value: video}, {label: "VFX", value: vfx}, {label: "Photo", value: photo}, {label: "Écriture", value: ecriture}, {label: "Dessin", value: dessin}, {label: "Son", value: son}, {label: "Divers", value: misc}]}
+              - {label: "Plateformes", name: platforms, widget: select, multiple: true, options: [{label: "Navigateur", value: web}, {label: "DaVinci Resolve (DCTL)", value: dctl}, {label: "Android", value: android}, {label: "Windows", value: windows}]}
+              - {label: "Adresse de l'outil web (ex. tools/mon-outil/)", name: webUrl, widget: string, required: false}
+              - {label: "Préfixe des versions (ex. mon-outil)", name: releasePrefix, widget: string, required: false}
+              - {label: "Mettre à la une sur l'accueil", name: featured, widget: boolean, default: false, required: false}
+              - {label: "Afficher le badge Nouveau", name: isNew, widget: boolean, default: false, required: false}
+              - {label: "Statut", name: status, widget: select, options: [{label: "Bientôt disponible", value: soon}], required: false}
+  - name: reglages
+    label: "Réglages et textes"
+    files:
+      - name: site
+        label: "Liens et langues"
+        file: data/site.json
+        fields:
+          - {label: "Dépôt des téléchargements (compte/dépôt)", name: repo, widget: string}
+          - {label: "Lien Ko-fi", name: donateUrl, widget: string}
+          - {label: "Lien Instagram", name: instagramUrl, widget: string, required: false}
+          - label: "Langues du site (codes)"
+            name: languages
+            widget: list
+            field: {label: Langue, name: lang, widget: string}
+      - name: textes_fr
+        label: "Textes du site : français"
+        file: i18n/fr.json
+        fields:
+          - {label: "lang_name", name: lang_name, widget: string}
+          - {label: "Slogan (titre de l'onglet)", name: tagline, widget: string}
+          - {label: "nav_tools", name: nav_tools, widget: string}
+          - {label: "nav_support", name: nav_support, widget: string}
+          - {label: "Accueil : titre", name: hero_title, widget: string}
+          - {label: "Accueil : texte", name: hero_text, widget: text}
+          - {label: "Accueil : bouton Voir les outils", name: see_tools, widget: string}
+          - {label: "Accueil : bouton Soutenir", name: support_project, widget: string}
+          - {label: "hero_alt", name: hero_alt, widget: string}
+          - {label: "Titre de la liste des outils", name: tools, widget: string}
+          - {label: "Texte sous le titre de la liste", name: tools_lead, widget: string}
+          - {label: "all", name: all, widget: string}
+          - {label: "empty", name: empty, widget: string}
+          - {label: "soon", name: soon, widget: string}
+          - {label: "open", name: open, widget: string}
+          - {label: "back", name: back, widget: string}
+          - {label: "open_web", name: open_web, widget: string}
+          - {label: "latest", name: latest, widget: string}
+          - {label: "history", name: history, widget: string}
+          - {label: "version", name: version, widget: string}
+          - {label: "date", name: date, widget: string}
+          - {label: "notes", name: notes, widget: string}
+          - {label: "files", name: files, widget: string}
+          - {label: "no_release", name: no_release, widget: string}
+          - {label: "loading", name: loading, widget: string}
+          - {label: "load_error", name: load_error, widget: string}
+          - {label: "p_web", name: p_web, widget: string}
+          - {label: "p_dctl", name: p_dctl, widget: string}
+          - {label: "p_android", name: p_android, widget: string}
+          - {label: "p_windows", name: p_windows, widget: string}
+          - {label: "Page Soutenir : titre", name: support_title, widget: string}
+          - {label: "Page Soutenir : texte", name: support_text, widget: text}
+          - {label: "Bouton de don", name: coffee, widget: string}
+          - {label: "Pied de page", name: footer, widget: string}
+          - {label: "nav_license", name: nav_license, widget: string}
+          - {label: "Licence : titre", name: license_title, widget: string}
+          - {label: "Licence : introduction", name: license_lead, widget: text}
+          - {label: "Lien vers la licence (fiches d'outils)", name: license_link, widget: string}
+          - {label: "Badge Nouveau", name: new, widget: string}
+          - {label: "Titre du bloc À la une", name: featured, widget: string}
+          - {label: "Pop-up de téléchargement : titre", name: thanks_title, widget: string}
+          - {label: "Pop-up de téléchargement : message", name: thanks_text, widget: text}
+          - {label: "Pop-up de téléchargement : temps libre et dons", name: thanks_free, widget: text}
+          - {label: "Pop-up : bouton Instagram", name: follow_ig, widget: string}
+          - {label: "Pop-up : bouton Fermer", name: close, widget: string}
+      - name: textes_en
+        label: "Textes du site : anglais"
+        file: i18n/en.json
+        fields:
+          - {label: "lang_name", name: lang_name, widget: string}
+          - {label: "Slogan (titre de l'onglet)", name: tagline, widget: string}
+          - {label: "nav_tools", name: nav_tools, widget: string}
+          - {label: "nav_support", name: nav_support, widget: string}
+          - {label: "Accueil : titre", name: hero_title, widget: string}
+          - {label: "Accueil : texte", name: hero_text, widget: text}
+          - {label: "Accueil : bouton Voir les outils", name: see_tools, widget: string}
+          - {label: "Accueil : bouton Soutenir", name: support_project, widget: string}
+          - {label: "hero_alt", name: hero_alt, widget: string}
+          - {label: "Titre de la liste des outils", name: tools, widget: string}
+          - {label: "Texte sous le titre de la liste", name: tools_lead, widget: string}
+          - {label: "all", name: all, widget: string}
+          - {label: "empty", name: empty, widget: string}
+          - {label: "soon", name: soon, widget: string}
+          - {label: "open", name: open, widget: string}
+          - {label: "back", name: back, widget: string}
+          - {label: "open_web", name: open_web, widget: string}
+          - {label: "latest", name: latest, widget: string}
+          - {label: "history", name: history, widget: string}
+          - {label: "version", name: version, widget: string}
+          - {label: "date", name: date, widget: string}
+          - {label: "notes", name: notes, widget: string}
+          - {label: "files", name: files, widget: string}
+          - {label: "no_release", name: no_release, widget: string}
+          - {label: "loading", name: loading, widget: string}
+          - {label: "load_error", name: load_error, widget: string}
+          - {label: "p_web", name: p_web, widget: string}
+          - {label: "p_dctl", name: p_dctl, widget: string}
+          - {label: "p_android", name: p_android, widget: string}
+          - {label: "p_windows", name: p_windows, widget: string}
+          - {label: "Page Soutenir : titre", name: support_title, widget: string}
+          - {label: "Page Soutenir : texte", name: support_text, widget: text}
+          - {label: "Bouton de don", name: coffee, widget: string}
+          - {label: "Pied de page", name: footer, widget: string}
+          - {label: "nav_license", name: nav_license, widget: string}
+          - {label: "Licence : titre", name: license_title, widget: string}
+          - {label: "Licence : introduction", name: license_lead, widget: text}
+          - {label: "Lien vers la licence (fiches d'outils)", name: license_link, widget: string}
+          - {label: "Badge Nouveau", name: new, widget: string}
+          - {label: "Titre du bloc À la une", name: featured, widget: string}
+          - {label: "Pop-up de téléchargement : titre", name: thanks_title, widget: string}
+          - {label: "Pop-up de téléchargement : message", name: thanks_text, widget: text}
+          - {label: "Pop-up de téléchargement : temps libre et dons", name: thanks_free, widget: text}
+          - {label: "Pop-up : bouton Instagram", name: follow_ig, widget: string}
+          - {label: "Pop-up : bouton Fermer", name: close, widget: string}

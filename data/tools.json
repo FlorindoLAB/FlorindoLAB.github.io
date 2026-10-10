@@ -1,38 +1,104 @@
 {
   "categories": [
-    {"id": "video", "fr": "Vidéo", "en": "Video"},
-    {"id": "vfx", "fr": "VFX", "en": "VFX"},
-    {"id": "photo", "fr": "Photo", "en": "Photo"},
-    {"id": "ecriture", "fr": "Écriture", "en": "Writing"},
-    {"id": "dessin", "fr": "Dessin", "en": "Drawing"},
-    {"id": "son", "fr": "Son", "en": "Sound"},
-    {"id": "misc", "fr": "Divers", "en": "Misc"}
+    {
+      "id": "video",
+      "fr": "Vidéo",
+      "en": "Video"
+    },
+    {
+      "id": "vfx",
+      "fr": "VFX",
+      "en": "VFX"
+    },
+    {
+      "id": "photo",
+      "fr": "Photo",
+      "en": "Photo"
+    },
+    {
+      "id": "ecriture",
+      "fr": "Écriture",
+      "en": "Writing"
+    },
+    {
+      "id": "dessin",
+      "fr": "Dessin",
+      "en": "Drawing"
+    },
+    {
+      "id": "son",
+      "fr": "Son",
+      "en": "Sound"
+    },
+    {
+      "id": "misc",
+      "fr": "Divers",
+      "en": "Misc"
+    }
   ],
   "tools": [
     {
       "id": "guides-composition",
-      "name": {"fr": "Guides de composition", "en": "Composition guides"},
-      "summary": {"fr": "Affiche des guides redimensionnables (tiers, zones de sécurité, diagonales) par-dessus l'image pour cadrer et composer.", "en": "Shows resizable guides (thirds, safe areas, diagonals) over the image to frame and compose."},
-      "categories": ["video"],
-      "platforms": ["web", "dctl"],
+      "name": {
+        "fr": "Guides de composition",
+        "en": "Composition guides"
+      },
+      "summary": {
+        "fr": "Affiche des guides redimensionnables (tiers, zones de sécurité, diagonales) par-dessus l'image pour cadrer et composer.",
+        "en": "Shows resizable guides (thirds, safe areas, diagonals) over the image to frame and compose."
+      },
+      "categories": [
+        "video"
+      ],
+      "platforms": [
+        "web",
+        "dctl"
+      ],
       "webUrl": "tools/guides-composition/",
-      "releasePrefix": "guides-composition"
+      "releasePrefix": "guides-composition",
+      "featured": true,
+      "isNew": true,
+      "description": {
+        "fr": "Choisis les guides à afficher (tiers, zones de sécurité, diagonales) et règle leur taille.\n\nPratique pour cadrer un plan, vérifier une composition ou préparer un montage.",
+        "en": "Pick the guides to display (thirds, safe areas, diagonals) and adjust their size.\n\nHandy to frame a shot, check a composition or prepare an edit."
+      }
     },
     {
       "id": "saponification",
-      "name": {"fr": "Calculateur de saponification", "en": "Saponification calculator"},
-      "summary": {"fr": "Calcule les quantités de soude et d'huiles pour une recette de savon, avec surgraissage au choix.", "en": "Works out the lye and oil quantities for a soap recipe, with adjustable superfat."},
-      "categories": ["misc"],
-      "platforms": ["web", "android"],
+      "name": {
+        "fr": "Calculateur de saponification",
+        "en": "Saponification calculator"
+      },
+      "summary": {
+        "fr": "Calcule les quantités de soude et d'huiles pour une recette de savon, avec surgraissage au choix.",
+        "en": "Works out the lye and oil quantities for a soap recipe, with adjustable superfat."
+      },
+      "categories": [
+        "misc"
+      ],
+      "platforms": [
+        "web",
+        "android"
+      ],
       "webUrl": "tools/saponification/",
       "releasePrefix": "saponification"
     },
     {
       "id": "generique",
-      "name": {"fr": "Logiciel de génériques", "en": "Credits software"},
-      "summary": {"fr": "Crée un générique de film à partir d'un simple tableur : rôles, noms, mise en page automatique.", "en": "Builds film credits from a simple spreadsheet: roles, names, automatic layout."},
-      "categories": ["video"],
-      "platforms": ["windows"],
+      "name": {
+        "fr": "Logiciel de génériques",
+        "en": "Credits software"
+      },
+      "summary": {
+        "fr": "Crée un générique de film à partir d'un simple tableur : rôles, noms, mise en page automatique.",
+        "en": "Builds film credits from a simple spreadsheet: roles, names, automatic layout."
+      },
+      "categories": [
+        "video"
+      ],
+      "platforms": [
+        "windows"
+      ],
       "status": "soon"
     }
   ]
