@@ -49,10 +49,10 @@ function fill(box, x, all) {
 function tool(id) {
   var x = T.tools.filter(function (y) { return y.id === id; })[0];
   if (!x) { location.hash = "#/"; return; }
-  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><h1 class="tt">' + esc(loc(x.name)) + "</h1>" + tags(x) + '<p class="lead">' + esc(loc(x.summary)) + "</p>" + body(x) + notice(x) +
+  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><header class="th"><h1 class="tt">' + esc(loc(x.name)) + "</h1>" + tags(x) + '<p class="lead">' + esc(loc(x.summary)) + '</p></header><div class="tg"><div class="tmain">' + body(x) + '</div><aside class="tside">' +
     (x.webUrl ? '<p><a class="btn main" href="' + esc(x.webUrl) + '">' + esc(t("open_web")) + "</a></p>" : "") +
-    (x.releasePrefix ? '<div class="dl" id="dl"><p>' + esc(t("loading")) + "</p></div>" : "") +
-    '<p class="lic"><a href="#/license">' + esc(t("license_link")) + "</a></p>";
+    (x.releasePrefix ? '<div class="dl" id="dl"><p>' + esc(t("loading")) + "</p></div>" : "") + notice(x) +
+    '<p class="lic"><a href="#/license">' + esc(t("license_link")) + "</a></p></aside></div>";
   var box = document.getElementById("dl");
   if (box) releases().then(function (all) { if (box.isConnected) fill(box, x, all); }).catch(function () { if (box.isConnected) box.innerHTML = '<p class="empty">' + esc(t("load_error")) + "</p>"; });
 }
@@ -69,17 +69,25 @@ function vid(u) {
   m = /vimeo\.com\/(\d+)/.exec(u || "");
   return m ? "https://player.vimeo.com/video/" + m[1] : "";
 }
+function rich(q) { return esc(q).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); }
+function blk(q) {
+  q = q.trim();
+  if (/^## /.test(q)) { var n = q.indexOf("\n"), r = n < 0 ? "" : q.slice(n + 1).trim(); return "<h3>" + rich((n < 0 ? q : q.slice(0, n)).slice(3)) + "</h3>" + (r ? blk(r) : ""); }
+  var ls = q.split("\n");
+  if (ls.every(function (l) { return /^- /.test(l.trim()); })) return "<ul>" + ls.map(function (l) { return "<li>" + rich(l.trim().slice(2)) + "</li>"; }).join("") + "</ul>";
+  return "<p>" + rich(q) + "</p>";
+}
 function body(x) {
   var v = x.video && typeof x.video === "object" ? loc(x.video) : x.video, u = vid(v), d = loc(x.description);
-  return (d ? d.replace(/\r/g, "").split(/\n\s*\n/).map(function (q) { return "<p>" + esc(q.trim()) + "</p>"; }).join("") : "") +
+  return (d ? d.replace(/\r/g, "").split(/\n\s*\n/).map(blk).join("") : "") +
     (u ? '<div class="vid"><iframe src="' + esc(u) + '" title="' + esc(loc(x.name)) + '" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>' : "");
 }
 function thanks() {
   var d = document.getElementById("thx");
   if (!d) { d = document.createElement("dialog"); d.id = "thx"; document.body.appendChild(d); d.addEventListener("click", function (e) { if (e.target === d) d.close(); }); }
   if (d.open) return;
-  d.innerHTML = "<h2>" + esc(t("thanks_title")) + "</h2><p>" + esc(t("thanks_text")) + "</p><p>" + esc(t("thanks_free")) + '</p><div class="acts"><a class="btn main" href="' + esc(S.donateUrl) + '" target="_blank" rel="noopener">' + esc(t("coffee")) + "</a>" +
-    (S.instagramUrl ? '<a class="btn" href="' + esc(S.instagramUrl) + '" target="_blank" rel="noopener">' + esc(t("follow_ig")) + "</a>" : "") + '<button type="button" class="btn" id="thx-x">' + esc(t("close")) + "</button></div>";
+  d.innerHTML = '<button type="button" class="x" id="thx-x" aria-label="' + esc(t("close")) + '">&times;</button><h2>' + esc(t("thanks_title")) + "</h2><p>" + esc(t("thanks_text")) + '</p><p class="soft">' + esc(t("thanks_free")) + '</p><div class="acts"><a class="btn main" href="' + esc(S.donateUrl) + '" target="_blank" rel="noopener">' + esc(t("coffee")) + "</a>" +
+    (S.instagramUrl ? '<a class="btn" href="' + esc(S.instagramUrl) + '" target="_blank" rel="noopener">' + esc(t("follow_ig")) + "</a>" : "") + "</div>";
   d.querySelector("#thx-x").onclick = function () { d.close(); };
   if (d.showModal) d.showModal(); else d.setAttribute("open", "");
 }
