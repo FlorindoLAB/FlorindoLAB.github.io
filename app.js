@@ -75,6 +75,11 @@ function blk(q) {
   if (/^## /.test(q)) { var n = q.indexOf("\n"), r = n < 0 ? "" : q.slice(n + 1).trim(); return "<h3>" + rich((n < 0 ? q : q.slice(0, n)).slice(3)) + "</h3>" + (r ? blk(r) : ""); }
   var ls = q.split("\n");
   if (ls.every(function (l) { return /^- /.test(l.trim()); })) return "<ul>" + ls.map(function (l) { return "<li>" + rich(l.trim().slice(2)) + "</li>"; }).join("") + "</ul>";
+  var hm = /\b[0-9A-Fa-f]{64}\b/.exec(q);
+  if (hm) {
+    var pre = q.slice(0, hm.index), k = Math.max(pre.lastIndexOf(". "), pre.lastIndexOf("! "), pre.lastIndexOf("? "));
+    return (k >= 0 ? "<p>" + rich(pre.slice(0, k + 1)) + "</p>" : "") + '<p class="fp"><span class="fpl">' + rich((k >= 0 ? pre.slice(k + 2) : pre).trim()) + '</span><code class="hash">' + hm[0] + "</code>" + rich(q.slice(hm.index + 64)) + "</p>";
+  }
   return "<p>" + rich(q) + "</p>";
 }
 function body(x) {
