@@ -5,7 +5,8 @@ var S, T, L = {}, lang = "fr", cat = "all", pr = null;
 var HERO = "<svg viewBox=\"0 0 640 360\" role=\"img\"><rect x=\"1\" y=\"1\" width=\"638\" height=\"358\" fill=\"none\" stroke=\"currentColor\" stroke-opacity=\".35\"/><rect class=\"safe\" x=\"32\" y=\"18\" width=\"576\" height=\"324\"/><rect class=\"safe\" x=\"64\" y=\"36\" width=\"512\" height=\"288\"/><line class=\"guide\" x1=\"213.3\" y1=\"0\" x2=\"213.3\" y2=\"360\"/><line class=\"guide\" x1=\"426.6\" y1=\"0\" x2=\"426.6\" y2=\"360\"/><line class=\"guide\" x1=\"0\" y1=\"120\" x2=\"640\" y2=\"120\"/><line class=\"guide\" x1=\"0\" y1=\"240\" x2=\"640\" y2=\"240\"/><line class=\"guide\" x1=\"0\" y1=\"360\" x2=\"640\" y2=\"0\" stroke-opacity=\".35\"/><circle class=\"guide\" cx=\"426.6\" cy=\"120\" r=\"14\"/><circle cx=\"426.6\" cy=\"120\" r=\"3\" fill=\"var(--accent)\"/></svg>";
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 function loc(o) { return (o && (o[lang] || o.en || o.fr)) || ""; }
-function t(k) { return (L[lang] && L[lang][k]) || (L.en && L.en[k]) || k; }
+var DEF = { notice: { fr: "Notice d'utilisation (PDF)", en: "User guide (PDF)" } };
+function t(k) { return (L[lang] && L[lang][k]) || (L.en && L.en[k]) || (DEF[k] && (DEF[k][lang] || DEF[k].en)) || k; }
 function get(u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
 function dt(s) { return new Date(s).toLocaleDateString(lang, { year: "numeric", month: "long", day: "numeric" }); }
 function sz(n) { var m = n > 1048576, v = m ? n / 1048576 : n / 1024; return new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(v) + (m ? " MB" : " KB"); }
@@ -48,7 +49,7 @@ function fill(box, x, all) {
 function tool(id) {
   var x = T.tools.filter(function (y) { return y.id === id; })[0];
   if (!x) { location.hash = "#/"; return; }
-  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><h1 class="tt">' + esc(loc(x.name)) + "</h1>" + tags(x) + '<p class="lead">' + esc(loc(x.summary)) + "</p>" + body(x) +
+  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><h1 class="tt">' + esc(loc(x.name)) + "</h1>" + tags(x) + '<p class="lead">' + esc(loc(x.summary)) + "</p>" + body(x) + notice(x) +
     (x.webUrl ? '<p><a class="btn main" href="' + esc(x.webUrl) + '">' + esc(t("open_web")) + "</a></p>" : "") +
     (x.releasePrefix ? '<div class="dl" id="dl"><p>' + esc(t("loading")) + "</p></div>" : "") +
     '<p class="lic"><a href="#/license">' + esc(t("license_link")) + "</a></p>";
@@ -81,6 +82,10 @@ function thanks() {
     (S.instagramUrl ? '<a class="btn" href="' + esc(S.instagramUrl) + '" target="_blank" rel="noopener">' + esc(t("follow_ig")) + "</a>" : "") + '<button type="button" class="btn" id="thx-x">' + esc(t("close")) + "</button></div>";
   d.querySelector("#thx-x").onclick = function () { d.close(); };
   if (d.showModal) d.showModal(); else d.setAttribute("open", "");
+}
+function notice(x) {
+  var n = x.notice && typeof x.notice === "object" ? loc(x.notice) : x.notice;
+  return n ? '<p><a class="btn" href="' + esc(n) + '" target="_blank" rel="noopener">' + esc(t("notice")) + "</a></p>" : "";
 }
 function license() {
   get("data/license.json").then(function (d) {
