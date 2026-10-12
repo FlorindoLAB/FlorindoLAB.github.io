@@ -52,6 +52,13 @@ collections:
                 fields:
                   - {label: Français, name: fr, widget: string, required: false}
                   - {label: English, name: en, widget: string, required: false}
+              - label: "Notice d'utilisation (fichier PDF)"
+                name: notice
+                widget: object
+                required: false
+                fields:
+                  - {label: Français, name: fr, widget: file, multiple: false, allow_multiple: false, required: false}
+                  - {label: English, name: en, widget: file, multiple: false, allow_multiple: false, required: false}
               - {label: "Catégories", name: categories, widget: select, multiple: true, options: [{label: "Vidéo", value: video}, {label: "VFX", value: vfx}, {label: "Photo", value: photo}, {label: "Écriture", value: ecriture}, {label: "Dessin", value: dessin}, {label: "Son", value: son}, {label: "Divers", value: misc}]}
               - {label: "Plateformes", name: platforms, widget: select, multiple: true, options: [{label: "Navigateur", value: web}, {label: "DaVinci Resolve (DCTL)", value: dctl}, {label: "Android", value: android}, {label: "Windows", value: windows}]}
               - {label: "Adresse de l'outil web (ex. tools/mon-outil/)", name: webUrl, widget: string, required: false}
