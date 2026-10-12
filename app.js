@@ -150,7 +150,7 @@ function contact(toolId) {
     fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(d) })
       .then(function (r) { return r.json(); })
       .then(function (j) { if (!j.success) throw new Error(j.message); f.innerHTML = '<p class="ok">' + esc(t("f_ok")) + "</p>"; })
-      .catch(function () { msg.className = "cm err"; msg.textContent = t("f_err"); btn.disabled = false; btn.textContent = t("f_send"); try { window.hcaptcha.reset(HID); } catch (x) {} });
+      .catch(function (err) { console.error("Web3Forms :", err); msg.className = "cm err"; msg.textContent = t("f_err") + (err && err.message ? " (" + err.message + ")" : ""); btn.disabled = false; btn.textContent = t("f_send"); try { window.hcaptcha.reset(HID); } catch (x) {} });
   };
 }
 function license() {
