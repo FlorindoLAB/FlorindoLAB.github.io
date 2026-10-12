@@ -69,7 +69,7 @@ function vid(u) {
   m = /vimeo\.com\/(\d+)/.exec(u || "");
   return m ? "https://player.vimeo.com/video/" + m[1] : "";
 }
-function rich(q) { return esc(q).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); }
+function rich(q) { return esc(q).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\b[0-9A-Fa-f]{64}\b/g, '<code class="hash">$&</code>'); }
 function blk(q) {
   q = q.trim();
   if (/^## /.test(q)) { var n = q.indexOf("\n"), r = n < 0 ? "" : q.slice(n + 1).trim(); return "<h3>" + rich((n < 0 ? q : q.slice(0, n)).slice(3)) + "</h3>" + (r ? blk(r) : ""); }
