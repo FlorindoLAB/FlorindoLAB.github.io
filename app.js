@@ -5,7 +5,22 @@ var S, T, L = {}, lang = "fr", cat = "all", pr = null;
 var HERO = "<svg viewBox=\"0 0 640 360\" role=\"img\"><rect x=\"1\" y=\"1\" width=\"638\" height=\"358\" fill=\"none\" stroke=\"currentColor\" stroke-opacity=\".35\"/><rect class=\"safe\" x=\"32\" y=\"18\" width=\"576\" height=\"324\"/><rect class=\"safe\" x=\"64\" y=\"36\" width=\"512\" height=\"288\"/><line class=\"guide\" x1=\"213.3\" y1=\"0\" x2=\"213.3\" y2=\"360\"/><line class=\"guide\" x1=\"426.6\" y1=\"0\" x2=\"426.6\" y2=\"360\"/><line class=\"guide\" x1=\"0\" y1=\"120\" x2=\"640\" y2=\"120\"/><line class=\"guide\" x1=\"0\" y1=\"240\" x2=\"640\" y2=\"240\"/><line class=\"guide\" x1=\"0\" y1=\"360\" x2=\"640\" y2=\"0\" stroke-opacity=\".35\"/><circle class=\"guide\" cx=\"426.6\" cy=\"120\" r=\"14\"/><circle cx=\"426.6\" cy=\"120\" r=\"3\" fill=\"var(--accent)\"/></svg>";
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 function loc(o) { return (o && (o[lang] || o.en || o.fr)) || ""; }
-var DEF = { notice: { fr: "Notice d'utilisation (PDF)", en: "User guide (PDF)" } };
+var DEF = {
+  notice: { fr: "Notice d'utilisation (PDF)", en: "User guide (PDF)" },
+  nav_contact: { fr: "Contact", en: "Contact" }, report_bug: { fr: "Signaler un bug ou poser une question", en: "Report a bug or ask a question" },
+  contact_title: { fr: "Contact", en: "Contact" },
+  contact_lead: { fr: "Un bug, une question, une idée ? Écrivez-moi : plus vous me donnez de détails, plus il me sera facile de vous aider.", en: "A bug, a question, an idea? Write to me: the more details you give, the easier it is for me to help." },
+  f_type: { fr: "Type de message", en: "Message type" }, t_bug: { fr: "Bug", en: "Bug" }, t_question: { fr: "Question", en: "Question" }, t_idea: { fr: "Suggestion", en: "Suggestion" },
+  f_tool: { fr: "Logiciel concerné", en: "Software concerned" }, f_other: { fr: "Autre / le site", en: "Other / the website" },
+  f_name: { fr: "Votre nom", en: "Your name" }, f_email: { fr: "Votre adresse e-mail", en: "Your email address" }, f_email_hint: { fr: "Uniquement pour vous répondre.", en: "Only used to reply to you." },
+  f_details: { fr: "Détails techniques (facultatif)", en: "Technical details (optional)" }, f_details_ph: { fr: "Version du logiciel, version de Windows…", en: "Software version, Windows version…" },
+  f_message: { fr: "Votre message", en: "Your message" }, f_send: { fr: "Envoyer", en: "Send" }, f_sending: { fr: "Envoi…", en: "Sending…" },
+  f_ok: { fr: "Merci ! Votre message est bien parti.", en: "Thank you! Your message has been sent." },
+  f_err: { fr: "Impossible d'envoyer le message pour le moment. Réessayez plus tard.", en: "Could not send the message right now. Please try again later." },
+  f_captcha: { fr: "Merci de valider le contrôle anti-robot.", en: "Please complete the anti-bot check." },
+  f_unconfigured: { fr: "Le formulaire n'est pas encore disponible.", en: "The form is not available yet." },
+  f_privacy: { fr: "Les informations saisies servent uniquement à vous répondre. Elles transitent par le service Web3Forms, et le contrôle anti-robot est assuré par hCaptcha.", en: "The information you enter is only used to reply to you. It goes through the Web3Forms service, and the anti-bot check is provided by hCaptcha." }
+};
 function t(k) { return (L[lang] && L[lang][k]) || (L.en && L.en[k]) || (DEF[k] && (DEF[k][lang] || DEF[k].en)) || k; }
 function get(u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
 function dt(s) { return new Date(s).toLocaleDateString(lang, { year: "numeric", month: "long", day: "numeric" }); }
@@ -52,7 +67,8 @@ function tool(id) {
   app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><header class="th"><h1 class="tt">' + esc(loc(x.name)) + "</h1>" + tags(x) + '<p class="lead">' + esc(loc(x.summary)) + '</p></header><div class="tg"><div class="tmain">' + body(x) + '</div><aside class="tside">' +
     (x.webUrl ? '<p><a class="btn main" href="' + esc(x.webUrl) + '">' + esc(t("open_web")) + "</a></p>" : "") +
     (x.releasePrefix ? '<div class="dl" id="dl"><p>' + esc(t("loading")) + "</p></div>" : "") + notice(x) +
-    '<p class="lic"><a href="#/license">' + esc(t("license_link")) + "</a></p></aside></div>";
+    '<p class="lic"><a href="#/license">' + esc(t("license_link")) + "</a></p>" +
+    (S.contactKey ? '<p class="lic"><a href="#/contact?tool=' + esc(x.id) + '">' + esc(t("report_bug")) + "</a></p>" : "") + "</aside></div>";
   var box = document.getElementById("dl");
   if (box) releases().then(function (all) { if (box.isConnected) fill(box, x, all); }).catch(function () { if (box.isConnected) box.innerHTML = '<p class="empty">' + esc(t("load_error")) + "</p>"; });
 }
@@ -100,6 +116,43 @@ function notice(x) {
   var n = x.notice && typeof x.notice === "object" ? loc(x.notice) : x.notice;
   return n ? '<p><a class="btn" href="' + esc(n) + '" target="_blank" rel="noopener">' + esc(t("notice")) + "</a></p>" : "";
 }
+var HCK = "50b2fe65-b00b-4b9e-ad62-3ba471098be2", hcl = null, HID = null;
+function hcap(cb) {
+  if (window.hcaptcha && window.hcaptcha.render) return cb();
+  if (!hcl) { hcl = document.createElement("script"); hcl.src = "https://js.hcaptcha.com/1/api.js?render=explicit"; hcl.async = true; document.head.appendChild(hcl); }
+  hcl.addEventListener("load", cb);
+}
+function contact(toolId) {
+  if (!S.contactKey) { app.innerHTML = '<p class="empty">' + esc(t("f_unconfigured")) + "</p>"; return; }
+  var tl = T.tools.map(function (x) { var n = loc(x.name); return '<option value="' + esc(n) + '"' + (x.id === toolId ? " selected" : "") + ">" + esc(n) + "</option>"; }).join("");
+  var ty = ["t_bug", "t_question", "t_idea"].map(function (k) { return '<option value="' + esc(t(k)) + '">' + esc(t(k)) + "</option>"; }).join("");
+  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><section class="sec"><h1 class="tt">' + esc(t("contact_title")) + '</h1><p class="lead">' + esc(t("contact_lead")) + '</p><form id="cf" class="cf">' +
+    "<label>" + esc(t("f_type")) + '<select name="type">' + ty + "</select></label>" +
+    "<label>" + esc(t("f_tool")) + '<select name="logiciel">' + tl + '<option value="' + esc(t("f_other")) + '">' + esc(t("f_other")) + "</option></select></label>" +
+    "<label>" + esc(t("f_name")) + '<input name="name" required autocomplete="name"></label>' +
+    "<label>" + esc(t("f_email")) + '<input type="email" name="email" required autocomplete="email"><small>' + esc(t("f_email_hint")) + "</small></label>" +
+    "<label>" + esc(t("f_details")) + '<input name="details" placeholder="' + esc(t("f_details_ph")) + '"></label>' +
+    "<label>" + esc(t("f_message")) + '<textarea name="message" rows="7" required minlength="10"></textarea></label>' +
+    '<input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none"><div id="hc"></div><p class="note">' + esc(t("f_privacy")) + '</p><button class="btn main" type="submit">' + esc(t("f_send")) + '</button><p class="cm" id="cm" role="status" aria-live="polite"></p></form></section>';
+  var f = document.getElementById("cf"), msg = document.getElementById("cm"), btn = f.querySelector("button");
+  hcap(function () {
+    var el = document.getElementById("hc");
+    if (!el || el.firstChild) return;
+    try { HID = window.hcaptcha.render(el, { sitekey: HCK, theme: window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light" }); } catch (e) {}
+  });
+  f.onsubmit = function (e) {
+    e.preventDefault();
+    var tok = window.hcaptcha && HID !== null ? window.hcaptcha.getResponse(HID) : "";
+    if (!tok) { msg.className = "cm err"; msg.textContent = t("f_captcha"); return; }
+    var d = {}; new FormData(f).forEach(function (v, k) { d[k] = v; });
+    d.access_key = S.contactKey; d["h-captcha-response"] = tok; d.from_name = "FlorindoLAB (site)"; d.subject = "FlorindoLAB : " + d.type + " / " + d.logiciel;
+    btn.disabled = true; btn.textContent = t("f_sending"); msg.className = "cm"; msg.textContent = "";
+    fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(d) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (!j.success) throw new Error(j.message); f.innerHTML = '<p class="ok">' + esc(t("f_ok")) + "</p>"; })
+      .catch(function () { msg.className = "cm err"; msg.textContent = t("f_err"); btn.disabled = false; btn.textContent = t("f_send"); try { window.hcaptcha.reset(HID); } catch (x) {} });
+  };
+}
 function license() {
   get("data/license.json").then(function (d) {
     if (location.hash.replace(/^#\/?/, "").split("/")[0] !== "license") return;
@@ -114,8 +167,9 @@ function support() {
   app.innerHTML = '<section class="sec support"><div><h1 class="tt">' + esc(t("support_title")) + "</h1><p>" + esc(t("support_text")) + '</p></div><a class="btn main coffee" href="' + esc(S.donateUrl) + '" rel="noopener">' + esc(t("coffee")) + "</a></section>";
 }
 function route() {
-  var h = location.hash.replace(/^#\/?/, "").split("/");
-  if (h[0] === "tool" && h[1]) tool(decodeURIComponent(h[1])); else if (h[0] === "support") support(); else if (h[0] === "license") license(); else home();
+  var raw = location.hash.replace(/^#\/?/, ""), qi = raw.indexOf("?"), q = qi < 0 ? "" : raw.slice(qi + 1), h = (qi < 0 ? raw : raw.slice(0, qi)).split("/");
+  if (h[0] === "tool" && h[1]) tool(decodeURIComponent(h[1])); else if (h[0] === "support") support(); else if (h[0] === "license") license();
+  else if (h[0] === "contact") contact((/(?:^|&)tool=([^&]+)/.exec(q) || [])[1]); else home();
   return h[0];
 }
 function onHash() { var s = route() === "tools" && document.getElementById("tools-sec"); if (s) s.scrollIntoView(); else window.scrollTo(0, 0); }
@@ -134,6 +188,7 @@ function boot() {
   app.addEventListener("click", function (e) { var a = e.target.closest && e.target.closest("a[data-dl]"); if (a) setTimeout(thanks, 400); });
   lang = l; sel.value = l; stat(); route();
   var ig = document.getElementById("ig"); if (S.instagramUrl) { ig.href = S.instagramUrl; ig.hidden = false; }
+  if (S.contactKey) document.getElementById("ct").hidden = false;
 }
 get("data/site.json").then(function (s) {
   S = s;
