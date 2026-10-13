@@ -119,7 +119,7 @@ function notice(x) {
 var HCK = "50b2fe65-b00b-4b9e-ad62-3ba471098be2", hcl = null, HID = null;
 function hcap(cb) {
   if (window.hcaptcha && window.hcaptcha.render) return cb();
-  if (!hcl) { hcl = document.createElement("script"); hcl.src = "https://js.hcaptcha.com/1/api.js?render=explicit"; hcl.async = true; document.head.appendChild(hcl); }
+  if (!hcl) { hcl = document.createElement("script"); hcl.src = "https://js.hcaptcha.com/1/api.js?render=explicit&recaptchacompat=off"; hcl.async = true; document.head.appendChild(hcl); }
   hcl.addEventListener("load", cb);
 }
 function contact(toolId) {
@@ -145,6 +145,7 @@ function contact(toolId) {
     var tok = window.hcaptcha && HID !== null ? window.hcaptcha.getResponse(HID) : "";
     if (!tok) { msg.className = "cm err"; msg.textContent = t("f_captcha"); return; }
     var d = {}; new FormData(f).forEach(function (v, k) { d[k] = v; });
+    delete d["g-recaptcha-response"];
     d.access_key = S.contactKey; d["h-captcha-response"] = tok; d.from_name = "FlorindoLAB (site)"; d.subject = "FlorindoLAB : " + d.type + " / " + d.logiciel;
     btn.disabled = true; btn.textContent = t("f_sending"); msg.className = "cm"; msg.textContent = "";
     fetch("https://api.web3forms.com/submit", { method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(d) })
