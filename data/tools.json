@@ -92,7 +92,7 @@
         "windows"
       ],
       "webUrl": "",
-      "releasePrefix": "",
+      "releasePrefix": "file-renamer",
       "featured": false,
       "isNew": true,
       "status": ""
