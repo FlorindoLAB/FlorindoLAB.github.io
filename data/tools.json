@@ -93,7 +93,7 @@
       ],
       "webUrl": "",
       "releasePrefix": "file-renamer",
-      "featured": false,
+      "featured": true,
       "isNew": true,
       "status": ""
     }
