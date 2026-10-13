@@ -52,6 +52,10 @@
         "en": "Overlay Guides displays composition guides (rule of thirds, golden ratio, diagonals, center cross, golden triangle) in a transparent window placed over your working area: Blender, an editing application, a video player…\n\nPlace up to 3 numbered markers to compare your camera axes, open several overlays in tabs, and overlay another window (for example an exported shot) with adjustable opacity. The Ctrl+Alt+G shortcut turns on click-through mode: clicks pass through the overlay to your software.\n\nFree, portable (no installation), no Internet connection needed, interface in French and English. Windows 10 or 11, 64-bit.\n\nOn first launch, Windows may show \"Windows protected your PC\" because the file is not yet signed: click \"More info\", then \"Run anyway\". File SHA-256 hash: 92F216B1753E02CF86B48401B058B47D5AA19856F36301713C5F0240CEB51788"
       },
       "video": null,
+      "notice": {
+        "fr": "/assets/uploads/OverlayGuides-notice-fr.pdf",
+        "en": "/assets/uploads/OverlayGuides-notice-en.pdf"
+      },
       "categories": [
         "vfx",
         "video",
