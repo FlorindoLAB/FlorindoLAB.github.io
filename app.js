@@ -4,7 +4,7 @@ var app = document.getElementById("app"), sel = document.getElementById("lang");
 var S, T, L = {}, LG = [], lang = "fr", cat = "all", pr = null;
 var FIXED = document.documentElement.getAttribute("data-fixed-lang") || "", PAGE = document.documentElement.getAttribute("data-route") || "";
 function hb() { return FIXED ? (FIXED === "en" ? "/en/" : "/") : ""; }
-function turl(id) { return (lang === "en" ? "/en/tools/" : "/outils/") + id + "/"; }
+function turl(id) { return FIXED ? (lang === "en" ? "/en/tools/" : "/outils/") + id + "/" : "#/tool/" + id; }
 function abs(u) { return /^(https?:)?\/\//.test(u) || u.charAt(0) === "/" ? u : "/" + u; }
 var HERO = "<svg viewBox=\"0 0 640 360\" role=\"img\"><rect x=\"1\" y=\"1\" width=\"638\" height=\"358\" fill=\"none\" stroke=\"currentColor\" stroke-opacity=\".35\"/><rect class=\"safe\" x=\"32\" y=\"18\" width=\"576\" height=\"324\"/><rect class=\"safe\" x=\"64\" y=\"36\" width=\"512\" height=\"288\"/><line class=\"guide\" x1=\"213.3\" y1=\"0\" x2=\"213.3\" y2=\"360\"/><line class=\"guide\" x1=\"426.6\" y1=\"0\" x2=\"426.6\" y2=\"360\"/><line class=\"guide\" x1=\"0\" y1=\"120\" x2=\"640\" y2=\"120\"/><line class=\"guide\" x1=\"0\" y1=\"240\" x2=\"640\" y2=\"240\"/><line class=\"guide\" x1=\"0\" y1=\"360\" x2=\"640\" y2=\"0\" stroke-opacity=\".35\"/><circle class=\"guide\" cx=\"426.6\" cy=\"120\" r=\"14\"/><circle cx=\"426.6\" cy=\"120\" r=\"3\" fill=\"var(--accent)\"/></svg>";
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
