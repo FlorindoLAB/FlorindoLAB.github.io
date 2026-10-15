@@ -2,6 +2,10 @@
 "use strict";
 var app = document.getElementById("app"), sel = document.getElementById("lang");
 var S, T, L = {}, LG = [], lang = "fr", cat = "all", pr = null;
+var FIXED = document.documentElement.getAttribute("data-fixed-lang") || "", PAGE = document.documentElement.getAttribute("data-route") || "";
+function hb() { return FIXED ? (FIXED === "en" ? "/en/" : "/") : ""; }
+function turl(id) { return (lang === "en" ? "/en/tools/" : "/outils/") + id + "/"; }
+function abs(u) { return /^(https?:)?\/\//.test(u) || u.charAt(0) === "/" ? u : "/" + u; }
 var HERO = "<svg viewBox=\"0 0 640 360\" role=\"img\"><rect x=\"1\" y=\"1\" width=\"638\" height=\"358\" fill=\"none\" stroke=\"currentColor\" stroke-opacity=\".35\"/><rect class=\"safe\" x=\"32\" y=\"18\" width=\"576\" height=\"324\"/><rect class=\"safe\" x=\"64\" y=\"36\" width=\"512\" height=\"288\"/><line class=\"guide\" x1=\"213.3\" y1=\"0\" x2=\"213.3\" y2=\"360\"/><line class=\"guide\" x1=\"426.6\" y1=\"0\" x2=\"426.6\" y2=\"360\"/><line class=\"guide\" x1=\"0\" y1=\"120\" x2=\"640\" y2=\"120\"/><line class=\"guide\" x1=\"0\" y1=\"240\" x2=\"640\" y2=\"240\"/><line class=\"guide\" x1=\"0\" y1=\"360\" x2=\"640\" y2=\"0\" stroke-opacity=\".35\"/><circle class=\"guide\" cx=\"426.6\" cy=\"120\" r=\"14\"/><circle cx=\"426.6\" cy=\"120\" r=\"3\" fill=\"var(--accent)\"/></svg>";
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 function loc(o) { return (o && (o[lang] || o.en || o.fr)) || ""; }
@@ -45,7 +49,7 @@ function tags(x) {
 function chip(id, label) { return '<button type="button" class="chip" data-f="' + esc(id) + '" aria-pressed="' + (cat === id) + '">' + esc(label) + "</button>"; }
 function row(x) {
   var soon = x.status === "soon";
-  return '<article class="tool"><div><h3><a href="#/tool/' + esc(x.id) + '">' + esc(loc(x.name)) + "</a></h3>" + tags(x) + "</div><p>" + esc(loc(x.summary)) + '</p><a class="btn' + (soon ? "" : " main") + '" href="#/tool/' + esc(x.id) + '">' + esc(t(soon ? "soon" : "open")) + "</a></article>";
+  return '<article class="tool"><div><h3><a href="' + turl(x.id) + '">' + esc(loc(x.name)) + "</a></h3>" + tags(x) + "</div><p>" + esc(loc(x.summary)) + '</p><a class="btn' + (soon ? "" : " main") + '" href="' + turl(x.id) + '">' + esc(t(soon ? "soon" : "open")) + "</a></article>";
 }
 function home() {
   var list = T.tools.filter(function (x) { return cat === "all" || (x.categories || []).indexOf(cat) > -1; });
@@ -72,8 +76,8 @@ function fill(box, x, all) {
 function tool(id) {
   var x = T.tools.filter(function (y) { return y.id === id; })[0];
   if (!x) { location.hash = "#/"; return; }
-  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><header class="th"><h1 class="tt">' + esc(loc(x.name)) + "</h1>" + tags(x) + '<p class="lead">' + esc(loc(x.summary)) + '</p></header><div class="tg"><div class="tmain">' + body(x) + '</div><aside class="tside">' +
-    (x.webUrl ? '<p><a class="btn main" href="' + esc(x.webUrl) + '">' + esc(t("open_web")) + "</a></p>" : "") +
+  app.innerHTML = '<a class="back" href="' + hb() + '#/tools">' + esc(t("back")) + '</a><header class="th"><h1 class="tt">' + esc(loc(x.name)) + "</h1>" + tags(x) + '<p class="lead">' + esc(loc(x.summary)) + '</p></header><div class="tg"><div class="tmain">' + body(x) + '</div><aside class="tside">' +
+    (x.webUrl ? '<p><a class="btn main" href="' + esc(abs(x.webUrl)) + '">' + esc(t("open_web")) + "</a></p>" : "") +
     (x.releasePrefix ? '<div class="dl" id="dl"><p>' + esc(t("loading")) + "</p></div>" : "") + notice(x) +
     '<p class="lic"><a href="#/license">' + esc(t("license_link")) + "</a></p>" +
     (S.contactKey ? '<p class="lic"><a href="#/contact?tool=' + esc(x.id) + '">' + esc(t("report_bug")) + "</a></p>" : "") + "</aside></div>";
@@ -84,7 +88,7 @@ function feat() {
   var f = T.tools.filter(function (x) { return x.featured; });
   if (!f.length) return "";
   return '<section class="sec feat"><h2>' + esc(t("featured")) + "</h2>" + f.map(function (x) {
-    return '<article class="fi"><div><h3><a href="#/tool/' + esc(x.id) + '">' + esc(loc(x.name)) + "</a></h3>" + tags(x) + "<p>" + esc(loc(x.summary)) + '</p></div><a class="btn main" href="#/tool/' + esc(x.id) + '">' + esc(t(x.status === "soon" ? "soon" : "open")) + "</a></article>";
+    return '<article class="fi"><div><h3><a href="' + turl(x.id) + '">' + esc(loc(x.name)) + "</a></h3>" + tags(x) + "<p>" + esc(loc(x.summary)) + '</p></div><a class="btn main" href="' + turl(x.id) + '">' + esc(t(x.status === "soon" ? "soon" : "open")) + "</a></article>";
   }).join("") + "</section>";
 }
 function vid(u) {
@@ -134,7 +138,7 @@ function contact(toolId) {
   if (!S.contactKey) { app.innerHTML = '<p class="empty">' + esc(t("f_unconfigured")) + "</p>"; return; }
   var tl = T.tools.map(function (x) { var n = loc(x.name); return '<option value="' + esc(n) + '"' + (x.id === toolId ? " selected" : "") + ">" + esc(n) + "</option>"; }).join("");
   var ty = ["t_bug", "t_question", "t_idea"].map(function (k) { return '<option value="' + esc(t(k)) + '">' + esc(t(k)) + "</option>"; }).join("");
-  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><section class="sec"><h1 class="tt">' + esc(t("contact_title")) + '</h1><p class="lead">' + esc(t("contact_lead")) + '</p><form id="cf" class="cf">' +
+  app.innerHTML = '<a class="back" href="' + hb() + '#/tools">' + esc(t("back")) + '</a><section class="sec"><h1 class="tt">' + esc(t("contact_title")) + '</h1><p class="lead">' + esc(t("contact_lead")) + '</p><form id="cf" class="cf">' +
     "<label>" + esc(t("f_type")) + '<select name="type">' + ty + "</select></label>" +
     "<label>" + esc(t("f_tool")) + '<select name="logiciel">' + tl + '<option value="' + esc(t("f_other")) + '">' + esc(t("f_other")) + "</option></select></label>" +
     "<label>" + esc(t("f_name")) + '<input name="name" required autocomplete="name"></label>' +
@@ -165,14 +169,14 @@ function contact(toolId) {
 function legal(id) {
   var p = LG.filter(function (x) { return x.id === id; })[0];
   if (!p) { location.hash = "#/"; return; }
-  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><section class="sec law"><h1 class="tt">' + esc(loc(p.title)) + "</h1>" + loc(p.body).replace(/\r/g, "").split(/\n\s*\n/).map(blk).join("") + "</section>";
+  app.innerHTML = '<a class="back" href="' + hb() + '#/tools">' + esc(t("back")) + '</a><section class="sec law"><h1 class="tt">' + esc(loc(p.title)) + "</h1>" + loc(p.body).replace(/\r/g, "").split(/\n\s*\n/).map(blk).join("") + "</section>";
 }
 var MINDL = 100;
 function nf(n) { return new Intl.NumberFormat(lang).format(n); }
 function dls(r) { return r.assets.reduce(function (n, a) { return n + (a.download_count || 0); }, 0); }
 function cnt(rs) { var n = rs.reduce(function (s, r) { return s + dls(r); }, 0); return n >= MINDL ? '<p class="ver">' + esc(nf(n) + " " + t("dl_count")) + "</p>" : ""; }
 function stats() {
-  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><section class="sec"><h1 class="tt">' + esc(t("stats_title")) + '</h1><p class="lead">' + esc(t("stats_lead")) + '</p><div id="st"><p>' + esc(t("loading")) + "</p></div></section>";
+  app.innerHTML = '<a class="back" href="' + hb() + '#/tools">' + esc(t("back")) + '</a><section class="sec"><h1 class="tt">' + esc(t("stats_title")) + '</h1><p class="lead">' + esc(t("stats_lead")) + '</p><div id="st"><p>' + esc(t("loading")) + "</p></div></section>";
   var box = document.getElementById("st");
   releases().then(function (all) { if (box.isConnected) box.innerHTML = statsHtml(all); }).catch(function () { if (box.isConnected) box.innerHTML = '<p class="empty">' + esc(t("load_error")) + "</p>"; });
 }
@@ -196,10 +200,10 @@ function statsHtml(all) {
     }).join("") + '<p class="note">' + esc(t("stats_note")) + "</p>";
 }
 function license() {
-  get("data/license.json").then(function (d) {
+  get("/data/license.json").then(function (d) {
     if (location.hash.replace(/^#\/?/, "").split("/")[0] !== "license") return;
     var c = d[lang] || d.en || d.fr;
-    app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><section class="sec law"><h1 class="tt">' + esc(t("license_title")) + '</h1><p class="lead">' + esc(t("license_lead")) + "</p>" +
+    app.innerHTML = '<a class="back" href="' + hb() + '#/tools">' + esc(t("back")) + '</a><section class="sec law"><h1 class="tt">' + esc(t("license_title")) + '</h1><p class="lead">' + esc(t("license_lead")) + "</p>" +
       c.map(function (s) {
         return "<h3>" + esc(s.n + ". " + s.h) + "</h3>" + s.p.map(function (q) { return '<p class="' + (/^[a-d]\) /.test(q) ? "it" : "lp") + '">' + esc(q) + "</p>"; }).join("");
       }).join("") + "</section>";
@@ -209,7 +213,7 @@ function support() {
   app.innerHTML = '<section class="sec support"><div><h1 class="tt">' + esc(t("support_title")) + "</h1><p>" + esc(t("support_text")) + '</p></div><a class="btn main coffee" href="' + esc(S.donateUrl) + '" rel="noopener">' + esc(t("coffee")) + "</a></section>";
 }
 function route() {
-  var raw = location.hash.replace(/^#\/?/, ""), qi = raw.indexOf("?"), q = qi < 0 ? "" : raw.slice(qi + 1), h = (qi < 0 ? raw : raw.slice(0, qi)).split("/");
+  var raw = location.hash.replace(/^#\/?/, "") || PAGE.replace(/^\//, ""), qi = raw.indexOf("?"), q = qi < 0 ? "" : raw.slice(qi + 1), h = (qi < 0 ? raw : raw.slice(0, qi)).split("/");
   if (h[0] === "tool" && h[1]) tool(decodeURIComponent(h[1])); else if (h[0] === "support") support(); else if (h[0] === "license") license();
   else if (h[0] === "stats") stats();
   else if (h[0] === "legal" && h[1]) legal(decodeURIComponent(h[1]));
@@ -220,28 +224,31 @@ function onHash() { var s = route() === "tools" && document.getElementById("tool
 function stat() {
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-i18n]").forEach(function (e) { e.textContent = t(e.getAttribute("data-i18n")); });
-  document.title = "FlorindoLAB – " + t("tagline");
+  if (!FIXED) document.title = "FlorindoLAB – " + t("tagline");
+  if (FIXED) { var br = document.querySelector(".brand"); if (br) br.setAttribute("href", hb()); var nt = document.querySelector('nav a[data-i18n="nav_tools"]'); if (nt) nt.setAttribute("href", hb() + "#/tools"); }
   var lg = document.getElementById("lg");
   if (lg) lg.innerHTML = LG.map(function (p) { return '<a href="#/legal/' + esc(p.id) + '">' + esc(loc(p.title)) + "</a>"; }).join(" ");
 }
 function boot() {
-  var l = null; try { l = localStorage.getItem("lang"); } catch (e) {}
+  var l = null, seen = false; try { l = localStorage.getItem("lang"); seen = !!l; } catch (e) {}
   if (!l) l = (navigator.language || "fr").slice(0, 2);
   if (S.languages.indexOf(l) < 0) l = S.languages.indexOf("en") > -1 ? "en" : S.languages[0];
+  if (FIXED && S.languages.indexOf(FIXED) > -1) { l = FIXED; try { localStorage.setItem("lang", l); } catch (e) {} }
   sel.innerHTML = S.languages.map(function (c) { return '<option value="' + esc(c) + '">' + esc(L[c].lang_name) + "</option>"; }).join("");
-  sel.onchange = function () { lang = sel.value; try { localStorage.setItem("lang", lang); } catch (e) {} stat(); route(); };
+  sel.onchange = function () { var alt = FIXED && document.querySelector('link[rel="alternate"][hreflang="' + sel.value + '"]'); if (alt) { try { localStorage.setItem("lang", sel.value); } catch (e) {} location.href = alt.getAttribute("href") + location.hash; return; } lang = sel.value; try { localStorage.setItem("lang", lang); } catch (e) {} stat(); route(); };
   window.addEventListener("hashchange", onHash);
   app.addEventListener("click", function (e) { var a = e.target.closest && e.target.closest("a[data-dl]"); if (a) setTimeout(thanks, 400); });
   lang = l; sel.value = l; stat(); route();
+  if (FIXED === "fr" && !seen && (navigator.language || "").slice(0, 2) === "en") { var bn = document.createElement("div"); bn.className = "lb"; bn.innerHTML = '<a href="/en/">This site is also available in English</a>'; document.body.insertBefore(bn, document.body.firstChild); }
   var ig = document.getElementById("ig"); if (S.instagramUrl) { ig.href = S.instagramUrl; ig.hidden = false; }
   if (S.contactKey) document.getElementById("ct").hidden = false;
 }
-get("data/site.json").then(function (s) {
+get("/data/site.json").then(function (s) {
   S = s;
-  return Promise.all([get("data/tools.json")].concat(S.languages.map(function (c) { return get("i18n/" + c + ".json"); })));
+  return Promise.all([get("/data/tools.json")].concat(S.languages.map(function (c) { return get("/i18n/" + c + ".json"); })));
 }).then(function (r) {
   T = r[0]; S.languages.forEach(function (c, i) { L[c] = r[i + 1]; });
-  return get("data/legal.json").then(function (j) { LG = j.pages || []; }, function () {}).then(boot);
+  return get("/data/legal.json").then(function (j) { LG = j.pages || []; }, function () {}).then(boot);
 }).catch(function () {
   app.innerHTML = '<p class="empty">Impossible de charger le site / Could not load the site. (GitHub Pages ou serveur local requis, pas de double-clic sur le fichier.)</p>';
 });

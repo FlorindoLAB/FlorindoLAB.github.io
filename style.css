@@ -139,3 +139,5 @@ code.hash{display:block;margin:8px 0 0;padding:10px 12px;background:var(--panel)
 .stb h3{display:flex;justify-content:space-between;gap:12px;font-size:20px;margin:26px 0 4px}
 .stb th:last-child,.stb td:last-child{text-align:right}
 #st .note{color:var(--muted);font-size:14px;margin:22px 0 0;max-width:70ch}
+
+.lb{background:var(--panel);border-bottom:1px solid var(--line);text-align:center;padding:8px 14px;font-size:15px}.lb a{font-weight:700;color:var(--accent-ink)}
