@@ -120,3 +120,15 @@ code.hash{display:block;margin:8px 0 0;padding:10px 12px;background:var(--panel)
 .cf button.btn{justify-self:start;padding:12px 28px;font-size:17px}.cf button.btn:disabled{opacity:.6;cursor:wait}
 .cm{margin:0;min-height:1.4em}.cm.err{color:#b3261e}.ok{font-size:21px;font-weight:700;margin:0}
 @media (prefers-color-scheme:dark){.cm.err{color:#ff9a8f}}
+
+.law p,.law ul{max-width:70ch;line-height:1.7;margin:0 0 14px}.law ul{padding-left:22px}.law li{margin:6px 0}
+.law a{color:var(--accent-ink);font-weight:700}
+#lg{display:contents}
+.tside p>.btn{display:block;text-align:center}
+
+.tside{display:grid;gap:14px;text-align:center}
+.tside>p{margin:0}
+.tside .btn{display:block;text-align:center;margin:0}
+.tside .dl .btn{margin:14px 0 0}
+.tside .dl-head{display:block;text-align:center}
+.tside .lic{margin:0;font-size:15px}

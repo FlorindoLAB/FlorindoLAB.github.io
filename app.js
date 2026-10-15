@@ -1,7 +1,7 @@
 (function () {
 "use strict";
 var app = document.getElementById("app"), sel = document.getElementById("lang");
-var S, T, L = {}, lang = "fr", cat = "all", pr = null;
+var S, T, L = {}, LG = [], lang = "fr", cat = "all", pr = null;
 var HERO = "<svg viewBox=\"0 0 640 360\" role=\"img\"><rect x=\"1\" y=\"1\" width=\"638\" height=\"358\" fill=\"none\" stroke=\"currentColor\" stroke-opacity=\".35\"/><rect class=\"safe\" x=\"32\" y=\"18\" width=\"576\" height=\"324\"/><rect class=\"safe\" x=\"64\" y=\"36\" width=\"512\" height=\"288\"/><line class=\"guide\" x1=\"213.3\" y1=\"0\" x2=\"213.3\" y2=\"360\"/><line class=\"guide\" x1=\"426.6\" y1=\"0\" x2=\"426.6\" y2=\"360\"/><line class=\"guide\" x1=\"0\" y1=\"120\" x2=\"640\" y2=\"120\"/><line class=\"guide\" x1=\"0\" y1=\"240\" x2=\"640\" y2=\"240\"/><line class=\"guide\" x1=\"0\" y1=\"360\" x2=\"640\" y2=\"0\" stroke-opacity=\".35\"/><circle class=\"guide\" cx=\"426.6\" cy=\"120\" r=\"14\"/><circle cx=\"426.6\" cy=\"120\" r=\"3\" fill=\"var(--accent)\"/></svg>";
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 function loc(o) { return (o && (o[lang] || o.en || o.fr)) || ""; }
@@ -85,7 +85,7 @@ function vid(u) {
   m = /vimeo\.com\/(\d+)/.exec(u || "");
   return m ? "https://player.vimeo.com/video/" + m[1] : "";
 }
-function rich(q) { return esc(q).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\b[0-9A-Fa-f]{64}\b/g, '<code class="hash">$&</code>'); }
+function rich(q) { return esc(q).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\b[0-9A-Fa-f]{64}\b/g, '<code class="hash">$&</code>').replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|#\/[^)\s]*)\)/g, function (m, a, u) { return '<a href="' + u + '"' + (u.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">" + a + "</a>"; }).replace(/\n/g, "<br>"); }
 function blk(q) {
   q = q.trim();
   if (/^## /.test(q)) { var n = q.indexOf("\n"), r = n < 0 ? "" : q.slice(n + 1).trim(); return "<h3>" + rich((n < 0 ? q : q.slice(0, n)).slice(3)) + "</h3>" + (r ? blk(r) : ""); }
@@ -154,6 +154,11 @@ function contact(toolId) {
       .catch(function (err) { console.error("Web3Forms :", err); msg.className = "cm err"; msg.textContent = t("f_err") + (err && err.message ? " (" + err.message + ")" : ""); btn.disabled = false; btn.textContent = t("f_send"); try { window.hcaptcha.reset(HID); } catch (x) {} });
   };
 }
+function legal(id) {
+  var p = LG.filter(function (x) { return x.id === id; })[0];
+  if (!p) { location.hash = "#/"; return; }
+  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><section class="sec law"><h1 class="tt">' + esc(loc(p.title)) + "</h1>" + loc(p.body).replace(/\r/g, "").split(/\n\s*\n/).map(blk).join("") + "</section>";
+}
 function license() {
   get("data/license.json").then(function (d) {
     if (location.hash.replace(/^#\/?/, "").split("/")[0] !== "license") return;
@@ -170,6 +175,7 @@ function support() {
 function route() {
   var raw = location.hash.replace(/^#\/?/, ""), qi = raw.indexOf("?"), q = qi < 0 ? "" : raw.slice(qi + 1), h = (qi < 0 ? raw : raw.slice(0, qi)).split("/");
   if (h[0] === "tool" && h[1]) tool(decodeURIComponent(h[1])); else if (h[0] === "support") support(); else if (h[0] === "license") license();
+  else if (h[0] === "legal" && h[1]) legal(decodeURIComponent(h[1]));
   else if (h[0] === "contact") contact((/(?:^|&)tool=([^&]+)/.exec(q) || [])[1]); else home();
   return h[0];
 }
@@ -178,6 +184,8 @@ function stat() {
   document.documentElement.lang = lang;
   document.querySelectorAll("[data-i18n]").forEach(function (e) { e.textContent = t(e.getAttribute("data-i18n")); });
   document.title = "FlorindoLAB – " + t("tagline");
+  var lg = document.getElementById("lg");
+  if (lg) lg.innerHTML = LG.map(function (p) { return '<a href="#/legal/' + esc(p.id) + '">' + esc(loc(p.title)) + "</a>"; }).join(" ");
 }
 function boot() {
   var l = null; try { l = localStorage.getItem("lang"); } catch (e) {}
@@ -195,7 +203,8 @@ get("data/site.json").then(function (s) {
   S = s;
   return Promise.all([get("data/tools.json")].concat(S.languages.map(function (c) { return get("i18n/" + c + ".json"); })));
 }).then(function (r) {
-  T = r[0]; S.languages.forEach(function (c, i) { L[c] = r[i + 1]; }); boot();
+  T = r[0]; S.languages.forEach(function (c, i) { L[c] = r[i + 1]; });
+  return get("data/legal.json").then(function (j) { LG = j.pages || []; }, function () {}).then(boot);
 }).catch(function () {
   app.innerHTML = '<p class="empty">Impossible de charger le site / Could not load the site. (GitHub Pages ou serveur local requis, pas de double-clic sur le fichier.)</p>';
 });
