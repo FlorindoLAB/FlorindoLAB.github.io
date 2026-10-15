@@ -179,3 +179,28 @@ collections:
           - {label: "Pop-up de téléchargement : temps libre et dons", name: thanks_free, widget: text}
           - {label: "Pop-up : bouton Instagram", name: follow_ig, widget: string}
           - {label: "Pop-up : bouton Fermer", name: close, widget: string}
+  - name: legal
+    label: "Pages légales"
+    files:
+      - name: legal
+        label: "Mentions légales, confidentialité, cookies, conditions"
+        file: data/legal.json
+        fields:
+          - label: "Pages"
+            name: pages
+            widget: list
+            summary: "{{fields.id}}"
+            fields:
+              - {label: "Identifiant (ne pas modifier)", name: id, widget: string}
+              - label: "Titre"
+                name: title
+                widget: object
+                fields:
+                  - {label: Français, name: fr, widget: string}
+                  - {label: English, name: en, widget: string}
+              - label: "Texte (## titre, - liste, **gras**, [mot](adresse))"
+                name: body
+                widget: object
+                fields:
+                  - {label: Français, name: fr, widget: text}
+                  - {label: English, name: en, widget: text}
