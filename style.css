@@ -132,3 +132,10 @@ code.hash{display:block;margin:8px 0 0;padding:10px 12px;background:var(--panel)
 .tside .dl .btn{margin:14px 0 0}
 .tside .dl-head{display:block;text-align:center}
 .tside .lic{margin:0;font-size:15px}
+
+.sc{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:8px 0 26px}
+.sc div{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px 18px}
+.sc b{display:block;font:800 34px/1.1 "Bricolage Grotesque",sans-serif}.sc span{color:var(--muted);font-size:15px}
+.stb h3{display:flex;justify-content:space-between;gap:12px;font-size:20px;margin:26px 0 4px}
+.stb th:last-child,.stb td:last-child{text-align:right}
+#st .note{color:var(--muted);font-size:14px;margin:22px 0 0;max-width:70ch}

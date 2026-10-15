@@ -21,6 +21,14 @@ var DEF = {
   f_unconfigured: { fr: "Le formulaire n'est pas encore disponible.", en: "The form is not available yet." },
   f_privacy: { fr: "Les informations saisies servent uniquement à vous répondre. Elles transitent par le service Web3Forms, et le contrôle anti-robot est assuré par hCaptcha.", en: "The information you enter is only used to reply to you. It goes through the Web3Forms service, and the anti-bot check is provided by hCaptcha." }
 };
+var X = {
+  stats_title: ["Statistiques de téléchargement", "Download statistics"],
+  stats_lead: ["Nombre de téléchargements des fichiers publiés dans les Releases GitHub, par outil et par version.", "Number of downloads of the files published in the GitHub Releases, by tool and by version."],
+  stats_note: ["Ces chiffres comptent tous les téléchargements du fichier (depuis le site ou par lien direct, robots inclus) et ne mesurent pas le nombre de visiteurs.", "These figures count every download of the file (from the site or through a direct link, bots included) and do not measure the number of visitors."],
+  stats_total: ["Téléchargements au total", "Total downloads"], stats_tools: ["Outils publiés", "Published tools"], stats_versions: ["Versions publiées", "Published versions"],
+  stats_downloads: ["Téléchargements", "Downloads"], stats_other: ["Autres fichiers", "Other files"], dl_count: ["téléchargements", "downloads"]
+};
+Object.keys(X).forEach(function (k) { DEF[k] = { fr: X[k][0], en: X[k][1] }; });
 function t(k) { return (L[lang] && L[lang][k]) || (L.en && L.en[k]) || (DEF[k] && (DEF[k][lang] || DEF[k].en)) || k; }
 function get(u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
 function dt(s) { return new Date(s).toLocaleDateString(lang, { year: "numeric", month: "long", day: "numeric" }); }
@@ -57,7 +65,7 @@ function fill(box, x, all) {
   var rows = rs.map(function (q) {
     return "<tr><td>" + esc(q.tag_name.slice(p.length)) + "</td><td>" + esc(dt(q.published_at)) + "</td><td>" + esc(note(q.body)) + "</td><td>" + q.assets.map(function (a) { return '<a data-dl href="' + esc(a.browser_download_url) + '">' + esc(a.name) + "</a>"; }).join("<br>") + "</td></tr>";
   }).join("");
-  box.innerHTML = '<div class="dl-head"><div><h2>' + esc(t("latest")) + " " + esc(r.tag_name.slice(p.length)) + '</h2><p class="ver">' + esc(dt(r.published_at)) + "</p></div><div>" +
+  box.innerHTML = '<div class="dl-head"><div><h2>' + esc(t("latest")) + " " + esc(r.tag_name.slice(p.length)) + '</h2><p class="ver">' + esc(dt(r.published_at)) + "</p>" + cnt(rs) + "</div><div>" +
     r.assets.map(function (a) { return '<a class="btn main" data-dl href="' + esc(a.browser_download_url) + '">' + esc(a.name) + " (" + sz(a.size) + ")</a>"; }).join("") + "</div></div>" +
     (rs.length > 1 ? "<details><summary>" + esc(t("history")) + '</summary><div class="scroll"><table><thead><tr><th>' + esc(t("version")) + "</th><th>" + esc(t("date")) + "</th><th>" + esc(t("notes")) + "</th><th>" + esc(t("files")) + "</th></tr></thead><tbody>" + rows + "</tbody></table></div></details>" : "");
 }
@@ -159,6 +167,34 @@ function legal(id) {
   if (!p) { location.hash = "#/"; return; }
   app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><section class="sec law"><h1 class="tt">' + esc(loc(p.title)) + "</h1>" + loc(p.body).replace(/\r/g, "").split(/\n\s*\n/).map(blk).join("") + "</section>";
 }
+var MINDL = 100;
+function nf(n) { return new Intl.NumberFormat(lang).format(n); }
+function dls(r) { return r.assets.reduce(function (n, a) { return n + (a.download_count || 0); }, 0); }
+function cnt(rs) { var n = rs.reduce(function (s, r) { return s + dls(r); }, 0); return n >= MINDL ? '<p class="ver">' + esc(nf(n) + " " + t("dl_count")) + "</p>" : ""; }
+function stats() {
+  app.innerHTML = '<a class="back" href="#/tools">' + esc(t("back")) + '</a><section class="sec"><h1 class="tt">' + esc(t("stats_title")) + '</h1><p class="lead">' + esc(t("stats_lead")) + '</p><div id="st"><p>' + esc(t("loading")) + "</p></div></section>";
+  var box = document.getElementById("st");
+  releases().then(function (all) { if (box.isConnected) box.innerHTML = statsHtml(all); }).catch(function () { if (box.isConnected) box.innerHTML = '<p class="empty">' + esc(t("load_error")) + "</p>"; });
+}
+function statsHtml(all) {
+  var rel = all.filter(function (r) { return !r.draft; }), used = {}, grand = 0, nver = 0;
+  var bl = T.tools.filter(function (x) { return x.releasePrefix; }).map(function (x) {
+    var p = x.releasePrefix + "-v", rs = rel.filter(function (r) { return r.tag_name.indexOf(p) === 0; });
+    rs.forEach(function (r) { used[r.id] = 1; });
+    return { name: loc(x.name), p: p, rs: rs, tot: rs.reduce(function (n, r) { return n + dls(r); }, 0) };
+  });
+  var oth = rel.filter(function (r) { return !used[r.id]; });
+  if (oth.length) bl.push({ name: t("stats_other"), p: "", o: true, rs: oth, tot: oth.reduce(function (n, r) { return n + dls(r); }, 0) });
+  bl = bl.filter(function (b) { return b.rs.length; }).sort(function (a, b) { return b.tot - a.tot; });
+  if (!bl.length) return '<p class="empty">' + esc(t("no_release")) + "</p>";
+  bl.forEach(function (b) { grand += b.tot; nver += b.rs.length; });
+  var ntools = bl.filter(function (b) { return !b.o; }).length;
+  return '<div class="sc"><div><b>' + nf(grand) + "</b><span>" + esc(t("stats_total")) + "</span></div><div><b>" + nf(ntools) + "</b><span>" + esc(t("stats_tools")) + "</span></div><div><b>" + nf(nver) + "</b><span>" + esc(t("stats_versions")) + "</span></div></div>" +
+    bl.map(function (b) {
+      return '<div class="stb"><h3><span>' + esc(b.name) + "</span><span>" + nf(b.tot) + '</span></h3><div class="scroll"><table><thead><tr><th>' + esc(t("version")) + "</th><th>" + esc(t("date")) + "</th><th>" + esc(t("stats_downloads")) + "</th></tr></thead><tbody>" +
+        b.rs.map(function (r) { return "<tr><td>" + esc(b.p ? r.tag_name.slice(b.p.length) : r.tag_name) + "</td><td>" + esc(dt(r.published_at)) + "</td><td>" + nf(dls(r)) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
+    }).join("") + '<p class="note">' + esc(t("stats_note")) + "</p>";
+}
 function license() {
   get("data/license.json").then(function (d) {
     if (location.hash.replace(/^#\/?/, "").split("/")[0] !== "license") return;
@@ -175,6 +211,7 @@ function support() {
 function route() {
   var raw = location.hash.replace(/^#\/?/, ""), qi = raw.indexOf("?"), q = qi < 0 ? "" : raw.slice(qi + 1), h = (qi < 0 ? raw : raw.slice(0, qi)).split("/");
   if (h[0] === "tool" && h[1]) tool(decodeURIComponent(h[1])); else if (h[0] === "support") support(); else if (h[0] === "license") license();
+  else if (h[0] === "stats") stats();
   else if (h[0] === "legal" && h[1]) legal(decodeURIComponent(h[1]));
   else if (h[0] === "contact") contact((/(?:^|&)tool=([^&]+)/.exec(q) || [])[1]); else home();
   return h[0];
