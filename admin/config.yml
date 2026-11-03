@@ -12,7 +12,7 @@ collections:
         label: "Liste des outils"
         file: data/tools.json
         fields:
-          - label: "Catégories"
+          - label: "Noms et traductions des catégories (facultatif : sert à traduire une catégorie en français et en anglais)"
             name: categories
             widget: list
             summary: "{{fields.id}}"
@@ -20,7 +20,7 @@ collections:
               - {label: "Identifiant (minuscules, sans espace)", name: id, widget: string}
               - {label: "Nom en français", name: fr, widget: string}
               - {label: "Nom en anglais", name: en, widget: string}
-          - label: "Plateformes"
+          - label: "Noms et traductions des plateformes (facultatif)"
             name: platforms
             widget: list
             required: false
@@ -68,25 +68,16 @@ collections:
                 fields:
                   - {label: Français, name: fr, widget: file, multiple: false, required: false}
                   - {label: English, name: en, widget: file, multiple: false, required: false}
-              - label: "Catégories"
+              - label: "Catégories de cet outil (cliquez sur Add et tapez un nom : Vidéo, VST, Plugin…)"
                 name: categories
-                widget: relation
-                collection: outils
-                file: tools
-                search_fields: ["categories.*.fr"]
-                display_fields: ["categories.*.fr"]
-                value_field: "categories.*.id"
-                multiple: true
-              - label: "Plateformes"
-                name: platforms
-                widget: relation
-                collection: outils
-                file: tools
-                search_fields: ["platforms.*.fr"]
-                display_fields: ["platforms.*.fr"]
-                value_field: "platforms.*.id"
-                multiple: true
+                widget: list
                 required: false
+                field: {label: Catégorie, name: category, widget: string}
+              - label: "Plateformes (cliquez sur Add et tapez un nom : Windows, macOS, Navigateur…)"
+                name: platforms
+                widget: list
+                required: false
+                field: {label: Plateforme, name: platform, widget: string}
               - {label: "Adresse de l'outil web (ex. tools/mon-outil/)", name: webUrl, widget: string, required: false}
               - {label: "Préfixe des versions (ex. mon-outil)", name: releasePrefix, widget: string, required: false}
               - label: "Fichiers à télécharger (infos de chaque fichier)"
@@ -95,15 +86,7 @@ collections:
                 required: false
                 summary: "{{fields.name}}"
                 fields:
-                  - label: "Plateforme"
-                    name: platform
-                    widget: relation
-                    collection: outils
-                    file: tools
-                    search_fields: ["platforms.*.fr"]
-                    display_fields: ["platforms.*.fr"]
-                    value_field: "platforms.*.id"
-                    required: false
+                  - {label: "Plateforme (ex. Windows, macOS)", name: platform, widget: string, required: false}
                   - {label: "Nom exact du fichier dans la Release (ex. OverlayGuides.exe)", name: name, widget: string}
                   - {label: "Version (ex. 1.0.0)", name: version, widget: string, required: false}
                   - {label: "Taille (ex. 154,5 Mo)", name: size, widget: string, required: false}
