@@ -20,6 +20,15 @@ collections:
               - {label: "Identifiant (minuscules, sans espace)", name: id, widget: string}
               - {label: "Nom en français", name: fr, widget: string}
               - {label: "Nom en anglais", name: en, widget: string}
+          - label: "Plateformes"
+            name: platforms
+            widget: list
+            required: false
+            summary: "{{fields.id}}"
+            fields:
+              - {label: "Identifiant (minuscules, sans espace)", name: id, widget: string}
+              - {label: "Nom en français", name: fr, widget: string}
+              - {label: "Nom en anglais", name: en, widget: string}
           - label: "Outils"
             name: tools
             widget: list
@@ -59,10 +68,46 @@ collections:
                 fields:
                   - {label: Français, name: fr, widget: file, multiple: false, required: false}
                   - {label: English, name: en, widget: file, multiple: false, required: false}
-              - {label: "Catégories", name: categories, widget: select, multiple: true, options: [{label: "Vidéo", value: video}, {label: "VFX", value: vfx}, {label: "Photo", value: photo}, {label: "Écriture", value: ecriture}, {label: "Dessin", value: dessin}, {label: "Son", value: son}, {label: "Divers", value: misc}]}
-              - {label: "Plateformes", name: platforms, widget: select, multiple: true, options: [{label: "Navigateur", value: web}, {label: "DaVinci Resolve (DCTL)", value: dctl}, {label: "Android", value: android}, {label: "Windows", value: windows}]}
+              - label: "Catégories"
+                name: categories
+                widget: relation
+                collection: outils
+                file: tools
+                search_fields: ["categories.*.fr"]
+                display_fields: ["categories.*.fr"]
+                value_field: "categories.*.id"
+                multiple: true
+              - label: "Plateformes"
+                name: platforms
+                widget: relation
+                collection: outils
+                file: tools
+                search_fields: ["platforms.*.fr"]
+                display_fields: ["platforms.*.fr"]
+                value_field: "platforms.*.id"
+                multiple: true
+                required: false
               - {label: "Adresse de l'outil web (ex. tools/mon-outil/)", name: webUrl, widget: string, required: false}
               - {label: "Préfixe des versions (ex. mon-outil)", name: releasePrefix, widget: string, required: false}
+              - label: "Fichiers à télécharger (infos de chaque fichier)"
+                name: files
+                widget: list
+                required: false
+                summary: "{{fields.name}}"
+                fields:
+                  - label: "Plateforme"
+                    name: platform
+                    widget: relation
+                    collection: outils
+                    file: tools
+                    search_fields: ["platforms.*.fr"]
+                    display_fields: ["platforms.*.fr"]
+                    value_field: "platforms.*.id"
+                    required: false
+                  - {label: "Nom exact du fichier dans la Release (ex. OverlayGuides.exe)", name: name, widget: string}
+                  - {label: "Version (ex. 1.0.0)", name: version, widget: string, required: false}
+                  - {label: "Taille (ex. 154,5 Mo)", name: size, widget: string, required: false}
+                  - {label: "Empreinte SHA-256", name: sha256, widget: string, required: false}
               - {label: "Mettre à la une sur l'accueil", name: featured, widget: boolean, default: false, required: false}
               - {label: "Afficher le badge Nouveau", name: isNew, widget: boolean, default: false, required: false}
               - {label: "Statut", name: status, widget: select, options: [{label: "Bientôt disponible", value: soon}], required: false}
