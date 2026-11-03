@@ -39,6 +39,11 @@
       "id": "vst",
       "fr": "VST",
       "en": "VST"
+    },
+    {
+      "id": "plugin",
+      "fr": "Plugin",
+      "en": "Plugin"
     }
   ],
   "tools": [
