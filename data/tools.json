@@ -34,6 +34,16 @@
       "id": "misc",
       "fr": "Divers",
       "en": "Misc"
+    },
+    {
+      "id": "plugin",
+      "fr": "Plugin",
+      "en": "Plugin"
+    },
+    {
+      "id": "vst",
+      "fr": "VST",
+      "en": "VST"
     }
   ],
   "tools": [
@@ -98,6 +108,37 @@
       "webUrl": "",
       "releasePrefix": "file-renamer",
       "featured": false,
+      "isNew": true,
+      "status": ""
+    },
+    {
+      "id": "florindoaudiosuite",
+      "name": {
+        "fr": "Florindo AudioSUITE - version mac (intel et silicon)",
+        "en": "Florindo AudioSUITE - mac edition (intel and silicon)"
+      },
+      "summary": {
+        "fr": "26 plugins audio gratuits et un rack pour mixer, mesurer et façonner le son, de l’égaliseur à l’accordeur. En VST3, Audio Unit et applications autonomes, pour macOS.",
+        "en": "26 free audio plug-ins and a rack to mix, measure and shape sound, from EQ to tuner. Available as VST3, Audio Unit and standalone apps, for macOS."
+      },
+      "description": {
+        "fr": "J'ai créé FlorindoAudioSuite pour avoir sous la main, gratuitement, tous les outils dont j'ai besoin pour mixer,\nmesurer et façonner le son : 26 plugins et un rack qui les rassemble tous.\n\nOn y trouve l'essentiel du quotidien (égaliseurs, compresseurs, gate, limiteur, de-esser), des outils de mesure\n(niveaux, loudness, phase, spectre, comparaison avec un morceau de référence), des effets (écho,\nréverbération, modulation, transposition), et des outils pour les musiciens : un accordeur précis jusque dans\nl'extrême grave, un détecteur de tempo et de tonalité, un préampli basse et un chargeur d'IR de baffle.\n\nChaque plugin existe en VST3 pour Windows et macOS, en Audio Unit sur Mac, et en application autonome.\nTout est gratuit, sans compte ni publicité.\n\nEmpreinte SHA-256 du fichier :  0b7ac843e6efa5d3abd1d2249ec3d386b12d41aaf023aed599ba92c1be65badb",
+        "en": "I created FlorindoAudioSuite to give myself free access to all the tools I need to mix, meter and shape sound: 26 plugins and one rack that brings them all together.\n\nIt includes essential everyday tools (equalizers, compressors, gate, limiter, de-esser), metering and analysis tools (levels, loudness, phase, spectrum analysis, reference track comparison), effects (delay, reverb, modulation, pitch shifting), and tools for musicians: a highly accurate tuner that works even in the extreme low frequencies, a tempo and key detector, a bass preamp and a cabinet IR loader.\n\nEach plugin is available as a VST3 for Windows and macOS, as an Audio Unit for Mac, and as a standalone application.\n\nEverything is completely free, with no account required and no ads.\n\nFile SHA-256: 0b7ac843e6efa5d3abd1d2249ec3d386b12d41aaf023aed599ba92c1be65badb"
+      },
+      "video": null,
+      "notice": {
+        "fr": "/assets/uploads/Guide FlorindoAudioSuite.pdf",
+        "en": "/assets/uploads/FlorindoAudioSuite User Guide.pdf"
+      },
+      "categories": [
+        "son"
+      ],
+      "platforms": [
+        "windows"
+      ],
+      "webUrl": "",
+      "releasePrefix": "florindoaudiosuite",
+      "featured": true,
       "isNew": true,
       "status": ""
     }
