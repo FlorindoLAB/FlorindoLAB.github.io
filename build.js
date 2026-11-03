@@ -19,6 +19,7 @@ const FB = {
   nav_contact: { fr: "Contact", en: "Contact" },
   dlgh: { fr: "Télécharger sur GitHub", en: "Download on GitHub" },
   suffix: { fr: "logiciel gratuit", en: "free software" },
+  shots: { fr: "Captures d'écran", en: "Screenshots" },
 };
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const tx = (lang, k) => (I[lang] && I[lang][k]) || (FB[k] && FB[k][lang]) || "";
@@ -58,6 +59,10 @@ const fileInfo = (x, lang) => (x.files || []).map((f) => {
   const l1 = [f.platform ? platLabel(f.platform, lang) : "", f.version ? tx(lang, "version") + " " + f.version : "", f.size || ""].filter(Boolean).join(", ");
   return `<p class="sha">${l1 ? "<span>" + esc(l1) + "</span>" : ""}${f.sha256 ? `<span>SHA-256</span><code class="hash">${esc(String(f.sha256).trim())}</code>` : ""}</p>`;
 }).join("");
+const shotsHtml = (x, lang) => {
+  const l = (x.screenshots || []).filter(Boolean);
+  return l.length ? `<h3>${esc(tx(lang, "shots"))}</h3><div class="shots">${l.map((s) => { const u = abs(s && typeof s === "object" ? s.image : s); return `<a href="${esc(u)}"><img src="${esc(u)}" alt="${esc(loc(x.name, lang))}" loading="lazy"></a>`; }).join("")}</div>` : "";
+};
 function tags(x, lang) {
   const c = (x.categories || []).map((v) => `<span class="tag cat">${esc(catLabel(v, lang))}</span>`);
   if (x.isNew) c.unshift(`<span class="tag new">${esc(tx(lang, "new"))}</span>`);
@@ -76,7 +81,7 @@ function homeMain(lang) {
 function toolMain(x, lang) {
   const web = x.webUrl ? `<p><a class="btn main" href="${esc(abs(x.webUrl))}">${esc(tx(lang, "open_web"))}</a></p>` : "";
   const dl = x.releasePrefix ? `<p><a class="btn main" href="https://github.com/${esc(S.repo)}/releases">${esc(tx(lang, "dlgh"))}</a></p>` : "";
-  return `<a class="back" href="${homeU(lang)}#/tools">${esc(tx(lang, "back"))}</a><header class="th"><h1 class="tt">${esc(loc(x.name, lang))}</h1>${tags(x, lang)}<p class="lead">${esc(loc(x.summary, lang))}</p></header><div class="tg"><div class="tmain">${bodyHtml(loc(x.description, lang))}</div><aside class="tside">${web}${dl}${fileInfo(x, lang)}<p class="lic"><a href="#/license">${esc(tx(lang, "license_link"))}</a></p></aside></div>`;
+  return `<a class="back" href="${homeU(lang)}#/tools">${esc(tx(lang, "back"))}</a><header class="th"><h1 class="tt">${esc(loc(x.name, lang))}</h1>${tags(x, lang)}<p class="lead">${esc(loc(x.summary, lang))}</p></header><div class="tg"><div class="tmain">${bodyHtml(loc(x.description, lang))}${shotsHtml(x, lang)}</div><aside class="tside">${web}${dl}${fileInfo(x, lang)}<p class="lic"><a href="#/license">${esc(tx(lang, "license_link"))}</a></p></aside></div>`;
 }
 
 function render(o) {

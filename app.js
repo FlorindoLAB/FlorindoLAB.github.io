@@ -30,7 +30,8 @@ var X = {
   stats_lead: ["Nombre de téléchargements des fichiers publiés dans les Releases GitHub, par outil et par version.", "Number of downloads of the files published in the GitHub Releases, by tool and by version."],
   stats_note: ["Ces chiffres comptent tous les téléchargements du fichier (depuis le site ou par lien direct, robots inclus) et ne mesurent pas le nombre de visiteurs.", "These figures count every download of the file (from the site or through a direct link, bots included) and do not measure the number of visitors."],
   stats_total: ["Téléchargements au total", "Total downloads"], stats_tools: ["Outils publiés", "Published tools"], stats_versions: ["Versions publiées", "Published versions"],
-  stats_downloads: ["Téléchargements", "Downloads"], stats_other: ["Autres fichiers", "Other files"], dl_count: ["téléchargements", "downloads"]
+  stats_downloads: ["Téléchargements", "Downloads"], stats_other: ["Autres fichiers", "Other files"], dl_count: ["téléchargements", "downloads"],
+  car_label: ["Aperçu des outils", "Tools preview"], car_prev: ["Précédent", "Previous"], car_next: ["Suivant", "Next"], shots: ["Captures d'écran", "Screenshots"]
 };
 Object.keys(X).forEach(function (k) { DEF[k] = { fr: X[k][0], en: X[k][1] }; });
 function t(k) { return (L[lang] && L[lang][k]) || (L.en && L.en[k]) || (DEF[k] && (DEF[k][lang] || DEF[k].en)) || k; }
@@ -53,10 +54,11 @@ function row(x) {
 }
 function home() {
   var list = T.tools.filter(function (x) { return cat === "all" || (x.categories || []).some(function (v) { return catKey(v) === cat; }); });
-  app.innerHTML = '<div class="hero"><div><h1>' + esc(t("hero_title")) + "</h1><p>" + esc(t("hero_text")) + '</p><a class="btn main" href="#/tools">' + esc(t("see_tools")) + '</a><a class="btn" href="#/support">' + esc(t("support_project")) + '</a></div><figure class="frame" style="margin:0">' + HERO.replace("<svg ", '<svg aria-label="' + esc(t("hero_alt")) + '" ') + "</figure></div>" + feat() +
+  app.innerHTML = '<div class="hero"><div><h1>' + esc(t("hero_title")) + "</h1><p>" + esc(t("hero_text")) + '</p><a class="btn main" href="#/tools">' + esc(t("see_tools")) + '</a><a class="btn" href="#/support">' + esc(t("support_project")) + '</a></div>' + heroVisual() + "</div>" + feat() +
     '<section class="sec" id="tools-sec"><h2>' + esc(t("tools")) + '</h2><p class="lead">' + esc(t("tools_lead")) + '</p><div class="chips" role="group">' + chip("all", t("all")) + catList().map(function (c) { return chip(c.k, c.label); }).join("") + "</div>" +
     (list.length ? list.map(row).join("") : '<p class="empty">' + esc(t("empty")) + "</p>") + "</section>";
   app.querySelectorAll(".chip").forEach(function (b) { b.onclick = function () { cat = b.getAttribute("data-f"); home(); }; });
+  carousel();
 }
 function releases() {
   if (!pr) pr = get("https://api.github.com/repos/" + S.repo + "/releases?per_page=100").catch(function (e) { pr = null; throw e; });
@@ -113,7 +115,46 @@ function blk(q) {
 function body(x) {
   var v = x.video && typeof x.video === "object" ? loc(x.video) : x.video, u = vid(v), d = loc(x.description);
   return (d ? d.replace(/\r/g, "").split(/\n\s*\n/).map(blk).join("") : "") +
-    (u ? '<div class="vid"><iframe src="' + esc(u) + '" title="' + esc(loc(x.name)) + '" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>' : "");
+    (u ? '<div class="vid"><iframe src="' + esc(u) + '" title="' + esc(loc(x.name)) + '" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>' : "") + shots(x);
+}
+function shotUrl(s) { return abs(s && typeof s === "object" ? s.image : s); }
+function shots(x) {
+  var l = (x.screenshots || []).filter(Boolean);
+  return l.length ? "<h3>" + esc(t("shots")) + '</h3><div class="shots">' + l.map(function (s) { var u = shotUrl(s); return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="' + esc(loc(x.name)) + '" loading="lazy" decoding="async"></a>'; }).join("") + "</div>" : "";
+}
+function heroVisual() {
+  var s = T.tools.filter(function (x) { return x.hero; });
+  if (!s.length) s = T.tools.filter(function (x) { return x.screenshots && x.screenshots.length; });
+  s = s.slice(0, 8);
+  if (!s.length) return '<div class="car"><div class="slide on"><div class="noimg"><span>Florindo<b class="lab">LAB</b></span></div></div></div>';
+  return '<div class="car" role="region" aria-roledescription="carousel" aria-label="' + esc(t("car_label")) + '">' + s.map(function (x, i) {
+    var im = (x.screenshots || []).filter(Boolean)[0];
+    return '<a class="slide' + (i ? "" : " on") + '" href="' + turl(x.id) + '">' + (im ? '<img src="' + esc(shotUrl(im)) + '" alt=""' + (i ? ' loading="lazy"' : "") + ' decoding="async">' : '<div class="noimg">' + esc(loc(x.name)) + "</div>") + '<span class="cap"><b>' + esc(loc(x.name)) + "</b>" + esc(loc(x.summary)) + "</span></a>";
+  }).join("") + (s.length > 1 ? '<button type="button" class="cb prev" aria-label="' + esc(t("car_prev")) + '">&#8249;</button><button type="button" class="cb next" aria-label="' + esc(t("car_next")) + '">&#8250;</button><div class="dots">' + s.map(function () { return '<button type="button" class="dot"></button>'; }).join("") + "</div>" : "") + "</div>";
+}
+var carT = null;
+function carousel() {
+  if (carT) { clearInterval(carT); carT = null; }
+  var c = document.querySelector(".car");
+  if (!c) return;
+  var sl = c.querySelectorAll(".slide"), dots = c.querySelectorAll(".dot"), i = 0, hov = false, x0 = null;
+  function go(n) {
+    if (!sl.length) return;
+    i = (n + sl.length) % sl.length;
+    sl.forEach(function (e, k) { e.classList.toggle("on", k === i); e.setAttribute("aria-hidden", k === i ? "false" : "true"); e.tabIndex = k === i ? 0 : -1; });
+    dots.forEach(function (d, k) { d.classList.toggle("on", k === i); d.setAttribute("aria-label", (k + 1) + " / " + sl.length); });
+  }
+  var pv = c.querySelector(".prev"), nx = c.querySelector(".next");
+  if (pv) pv.onclick = function () { go(i - 1); };
+  if (nx) nx.onclick = function () { go(i + 1); };
+  dots.forEach(function (d, k) { d.onclick = function () { go(k); }; });
+  ["mouseenter", "focusin"].forEach(function (ev) { c.addEventListener(ev, function () { hov = true; }); });
+  ["mouseleave", "focusout"].forEach(function (ev) { c.addEventListener(ev, function () { hov = false; }); });
+  c.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+  c.addEventListener("touchend", function (e) { if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) go(i + (dx < 0 ? 1 : -1)); x0 = null; });
+  var rm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (sl.length > 1 && !rm) carT = setInterval(function () { if (!document.body.contains(c)) { clearInterval(carT); carT = null; return; } if (!hov) go(i + 1); }, 5000);
+  go(0);
 }
 function thanks() {
   var d = document.getElementById("thx");

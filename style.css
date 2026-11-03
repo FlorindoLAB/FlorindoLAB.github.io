@@ -143,3 +143,18 @@ code.hash{display:block;margin:8px 0 0;padding:10px 12px;background:var(--panel)
 .lb{background:var(--panel);border-bottom:1px solid var(--line);text-align:center;padding:8px 14px;font-size:15px}.lb a{font-weight:700;color:var(--accent-ink)}
 
 .sha{margin:8px 0 0;text-align:left;font-size:13px;color:var(--muted)}.sha span{display:block;margin-bottom:4px}.sha code.hash{margin-top:0;font-size:12.5px}
+
+.car{position:relative;aspect-ratio:16/10;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.slide{position:absolute;inset:0;display:block;opacity:0;visibility:hidden;transition:opacity .6s,visibility .6s;color:#fff;text-decoration:none}
+.slide.on{opacity:1;visibility:visible;z-index:1}
+.slide img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+.slide .noimg{display:grid;place-items:center;height:100%;padding:24px;text-align:center;font:800 clamp(26px,3.4vw,44px) "Bricolage Grotesque",sans-serif;background:linear-gradient(135deg,#0f1c24,#1f3a4a)}
+.cap{position:absolute;left:0;right:0;bottom:0;padding:48px 20px 16px;background:linear-gradient(transparent,rgba(8,14,18,.92));display:grid;gap:3px;font-size:15px;line-height:1.35;text-align:left}
+.cap b{font:800 21px "Bricolage Grotesque",sans-serif}
+.cb{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:42px;height:42px;border:0;border-radius:50%;background:rgba(8,14,18,.6);color:#fff;font-size:28px;line-height:1;cursor:pointer}
+.cb.prev{left:10px}.cb.next{right:10px}.cb:hover{background:var(--accent);color:var(--accent-fg)}
+.dots{position:absolute;top:12px;right:14px;z-index:2;display:flex;gap:7px}
+.dot{width:11px;height:11px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.5);cursor:pointer}.dot.on{background:var(--accent)}
+.shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:8px 0 22px;max-width:760px}
+.shots img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;border:1px solid var(--line);border-radius:6px}
+@media (prefers-reduced-motion:reduce){.slide{transition:none}}
