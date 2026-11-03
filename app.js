@@ -40,7 +40,7 @@ function sz(n) { var m = n > 1048576, v = m ? n / 1048576 : n / 1024; return new
 function note(s) { s = (s || "").replace(/\s*\n+\s*/g, " ").trim(); return s.length > 140 ? s.slice(0, 140) + "…" : s; }
 
 function tags(x) {
-  var c = (x.categories || []).map(function (id) { var k = T.categories.filter(function (y) { return y.id === id; })[0]; return '<span class="tag cat">' + esc(k ? loc(k) : id) + "</span>"; });
+  var c = (x.categories || []).map(function (v) { return '<span class="tag cat">' + esc(catLabel(v)) + "</span>"; });
   var p = (x.platforms || []).map(function (id) { return '<span class="tag">' + esc(plat(id)) + "</span>"; });
   if (x.isNew) c.unshift('<span class="tag new">' + esc(t("new")) + "</span>");
   if (x.status === "soon") p.push('<span class="tag soon">' + esc(t("soon")) + "</span>");
@@ -52,9 +52,9 @@ function row(x) {
   return '<article class="tool"><div><h3><a href="' + turl(x.id) + '">' + esc(loc(x.name)) + "</a></h3>" + tags(x) + "</div><p>" + esc(loc(x.summary)) + '</p><a class="btn' + (soon ? "" : " main") + '" href="' + turl(x.id) + '">' + esc(t(soon ? "soon" : "open")) + "</a></article>";
 }
 function home() {
-  var list = T.tools.filter(function (x) { return cat === "all" || (x.categories || []).indexOf(cat) > -1; });
+  var list = T.tools.filter(function (x) { return cat === "all" || (x.categories || []).some(function (v) { return catKey(v) === cat; }); });
   app.innerHTML = '<div class="hero"><div><h1>' + esc(t("hero_title")) + "</h1><p>" + esc(t("hero_text")) + '</p><a class="btn main" href="#/tools">' + esc(t("see_tools")) + '</a><a class="btn" href="#/support">' + esc(t("support_project")) + '</a></div><figure class="frame" style="margin:0">' + HERO.replace("<svg ", '<svg aria-label="' + esc(t("hero_alt")) + '" ') + "</figure></div>" + feat() +
-    '<section class="sec" id="tools-sec"><h2>' + esc(t("tools")) + '</h2><p class="lead">' + esc(t("tools_lead")) + '</p><div class="chips" role="group">' + chip("all", t("all")) + T.categories.map(function (c) { return chip(c.id, loc(c)); }).join("") + "</div>" +
+    '<section class="sec" id="tools-sec"><h2>' + esc(t("tools")) + '</h2><p class="lead">' + esc(t("tools_lead")) + '</p><div class="chips" role="group">' + chip("all", t("all")) + catList().map(function (c) { return chip(c.k, c.label); }).join("") + "</div>" +
     (list.length ? list.map(row).join("") : '<p class="empty">' + esc(t("empty")) + "</p>") + "</section>";
   app.querySelectorAll(".chip").forEach(function (b) { b.onclick = function () { cat = b.getAttribute("data-f"); home(); }; });
 }
@@ -199,10 +199,20 @@ function statsHtml(all) {
         b.rs.map(function (r) { return "<tr><td>" + esc(b.p ? r.tag_name.slice(b.p.length) : r.tag_name) + "</td><td>" + esc(dt(r.published_at)) + "</td><td>" + nf(dls(r)) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
     }).join("") + '<p class="note">' + esc(t("stats_note")) + "</p>";
 }
-function plat(id) {
-  var p = (T.platforms || []).filter(function (y) { return y.id === id; })[0];
+function norm(s) { return String(s == null ? "" : s).trim().toLowerCase(); }
+function cfind(v) { var n = norm(v); return (T.categories || []).filter(function (y) { return norm(y.id) === n || norm(y.fr) === n || norm(y.en) === n; })[0]; }
+function catLabel(v) { var c = cfind(v); return c ? loc(c) : String(v).trim(); }
+function catKey(v) { var c = cfind(v); return c ? norm(c.id || c.fr) : norm(v); }
+function catList() {
+  var seen = {}, out = [];
+  (T.categories || []).forEach(function (c) { var k = catKey(c.id || c.fr); if (k && !seen[k]) { seen[k] = 1; out.push({ k: k, label: loc(c) }); } });
+  T.tools.forEach(function (x) { (x.categories || []).forEach(function (v) { var k = catKey(v); if (k && !seen[k]) { seen[k] = 1; out.push({ k: k, label: catLabel(v) }); } }); });
+  return out;
+}
+function plat(v) {
+  var n = norm(v), p = (T.platforms || []).filter(function (y) { return norm(y.id) === n || norm(y.fr) === n || norm(y.en) === n; })[0];
   if (p) return loc(p);
-  var k = t("p_" + id); return k === "p_" + id ? id : k;
+  var k = t("p_" + n); return k === "p_" + n ? String(v).trim() : k;
 }
 function finfo(x, a) { var n = (a.name || "").toLowerCase(); return (x.files || []).filter(function (f) { return f && f.name && f.name.toLowerCase() === n; })[0]; }
 function dlbtn(x, a) {

@@ -49,16 +49,17 @@ function blk(q) {
 }
 const bodyHtml = (s) => (s ? s.replace(/\r/g, "").split(/\n\s*\n/).map(blk).join("") : "");
 
-const platLabel = (id, lang) => { const p = (T.platforms || []).find((y) => y.id === id); return p ? loc(p, lang) : (tx(lang, "p_" + id) || id); };
+const norm = (s) => String(s == null ? "" : s).trim().toLowerCase();
+const cfind = (v) => (T.categories || []).find((y) => [y.id, y.fr, y.en].some((z) => norm(z) === norm(v)));
+const catLabel = (v, lang) => { const c = cfind(v); return c ? loc(c, lang) : String(v).trim(); };
+const catId = (v) => { const c = cfind(v); return c ? norm(c.id || c.fr) : norm(v); };
+const platLabel = (v, lang) => { const p = (T.platforms || []).find((y) => [y.id, y.fr, y.en].some((z) => norm(z) === norm(v))); return p ? loc(p, lang) : (tx(lang, "p_" + norm(v)) || String(v).trim()); };
 const fileInfo = (x, lang) => (x.files || []).map((f) => {
   const l1 = [f.platform ? platLabel(f.platform, lang) : "", f.version ? tx(lang, "version") + " " + f.version : "", f.size || ""].filter(Boolean).join(", ");
   return `<p class="sha">${l1 ? "<span>" + esc(l1) + "</span>" : ""}${f.sha256 ? `<span>SHA-256</span><code class="hash">${esc(String(f.sha256).trim())}</code>` : ""}</p>`;
 }).join("");
 function tags(x, lang) {
-  const c = (x.categories || []).map((id) => {
-    const k = T.categories.find((y) => y.id === id);
-    return `<span class="tag cat">${esc(k ? loc(k, lang) : id)}</span>`;
-  });
+  const c = (x.categories || []).map((v) => `<span class="tag cat">${esc(catLabel(v, lang))}</span>`);
   if (x.isNew) c.unshift(`<span class="tag new">${esc(tx(lang, "new"))}</span>`);
   const p = (x.platforms || []).map((id) => `<span class="tag">${esc(platLabel(id, lang))}</span>`);
   if (x.status === "soon") p.push(`<span class="tag soon">${esc(tx(lang, "soon"))}</span>`);
@@ -137,8 +138,8 @@ for (const lang of ["fr", "en"]) {
       desc: summary, main: toolMain(x, lang),
       ld: {
         "@context": "https://schema.org", "@type": "SoftwareApplication", name, description: summary, url: ORIGIN + turl(x.id, lang), inLanguage: lang,
-        applicationCategory: (x.categories || []).some((c) => MEDIA.includes(c)) ? "MultimediaApplication" : "UtilitiesApplication",
-        operatingSystem: (x.platforms || []).map((p) => { const q = (T.platforms || []).find((y) => y.id === p); return (q && (q.en || q.fr)) || OSNAME[p] || p; }).join(", "),
+        applicationCategory: (x.categories || []).some((c) => MEDIA.includes(catId(c))) ? "MultimediaApplication" : "UtilitiesApplication",
+        operatingSystem: (x.platforms || []).map((p) => platLabel(p, "en")).join(", "),
         ...((x.files || []).find((f) => f.version) ? { softwareVersion: (x.files || []).find((f) => f.version).version } : {}),
         isAccessibleForFree: true, offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
         image: ORIGIN + "/assets/og-image.png", publisher: { "@type": "Organization", name: "FlorindoLAB", url: ORIGIN },
