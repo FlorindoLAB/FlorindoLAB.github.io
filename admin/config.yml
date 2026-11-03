@@ -91,6 +91,12 @@ collections:
                   - {label: "Version (ex. 1.0.0)", name: version, widget: string, required: false}
                   - {label: "Taille (ex. 154,5 Mo)", name: size, widget: string, required: false}
                   - {label: "Empreinte SHA-256", name: sha256, widget: string, required: false}
+              - label: "Captures d'écran (cliquez sur Add et envoyez des images ; la première sert au carrousel d'accueil)"
+                name: screenshots
+                widget: list
+                required: false
+                field: {label: Capture, name: image, widget: image}
+              - {label: "Afficher dans le carrousel de l'accueil", name: hero, widget: boolean, default: false, required: false}
               - {label: "Mettre à la une sur l'accueil", name: featured, widget: boolean, default: false, required: false}
               - {label: "Afficher le badge Nouveau", name: isNew, widget: boolean, default: false, required: false}
               - {label: "Statut", name: status, widget: select, options: [{label: "Bientôt disponible", value: soon}], required: false}
