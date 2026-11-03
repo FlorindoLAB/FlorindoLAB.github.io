@@ -41,7 +41,7 @@ function note(s) { s = (s || "").replace(/\s*\n+\s*/g, " ").trim(); return s.len
 
 function tags(x) {
   var c = (x.categories || []).map(function (id) { var k = T.categories.filter(function (y) { return y.id === id; })[0]; return '<span class="tag cat">' + esc(k ? loc(k) : id) + "</span>"; });
-  var p = (x.platforms || []).map(function (id) { return '<span class="tag">' + esc(t("p_" + id)) + "</span>"; });
+  var p = (x.platforms || []).map(function (id) { return '<span class="tag">' + esc(plat(id)) + "</span>"; });
   if (x.isNew) c.unshift('<span class="tag new">' + esc(t("new")) + "</span>");
   if (x.status === "soon") p.push('<span class="tag soon">' + esc(t("soon")) + "</span>");
   return '<div class="tags">' + c.concat(p).join("") + "</div>";
@@ -70,7 +70,7 @@ function fill(box, x, all) {
     return "<tr><td>" + esc(q.tag_name.slice(p.length)) + "</td><td>" + esc(dt(q.published_at)) + "</td><td>" + esc(note(q.body)) + "</td><td>" + q.assets.map(function (a) { return '<a data-dl href="' + esc(a.browser_download_url) + '">' + esc(a.name) + "</a>"; }).join("<br>") + "</td></tr>";
   }).join("");
   box.innerHTML = '<div class="dl-head"><div><h2>' + esc(t("latest")) + " " + esc(r.tag_name.slice(p.length)) + '</h2><p class="ver">' + esc(dt(r.published_at)) + "</p>" + cnt(rs) + "</div><div>" +
-    r.assets.map(function (a) { return '<a class="btn main" data-dl href="' + esc(a.browser_download_url) + '">' + esc(a.name) + " (" + sz(a.size) + ")</a>"; }).join("") + "</div></div>" +
+    r.assets.map(function (a) { return dlbtn(x, a); }).join("") + "</div></div>" +
     (rs.length > 1 ? "<details><summary>" + esc(t("history")) + '</summary><div class="scroll"><table><thead><tr><th>' + esc(t("version")) + "</th><th>" + esc(t("date")) + "</th><th>" + esc(t("notes")) + "</th><th>" + esc(t("files")) + "</th></tr></thead><tbody>" + rows + "</tbody></table></div></details>" : "");
 }
 function tool(id) {
@@ -198,6 +198,17 @@ function statsHtml(all) {
       return '<div class="stb"><h3><span>' + esc(b.name) + "</span><span>" + nf(b.tot) + '</span></h3><div class="scroll"><table><thead><tr><th>' + esc(t("version")) + "</th><th>" + esc(t("date")) + "</th><th>" + esc(t("stats_downloads")) + "</th></tr></thead><tbody>" +
         b.rs.map(function (r) { return "<tr><td>" + esc(b.p ? r.tag_name.slice(b.p.length) : r.tag_name) + "</td><td>" + esc(dt(r.published_at)) + "</td><td>" + nf(dls(r)) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
     }).join("") + '<p class="note">' + esc(t("stats_note")) + "</p>";
+}
+function plat(id) {
+  var p = (T.platforms || []).filter(function (y) { return y.id === id; })[0];
+  if (p) return loc(p);
+  var k = t("p_" + id); return k === "p_" + id ? id : k;
+}
+function finfo(x, a) { var n = (a.name || "").toLowerCase(); return (x.files || []).filter(function (f) { return f && f.name && f.name.toLowerCase() === n; })[0]; }
+function dlbtn(x, a) {
+  var m = finfo(x, a), s = m && m.size ? m.size : sz(a.size);
+  return '<a class="btn main" data-dl href="' + esc(a.browser_download_url) + '">' + (m && m.platform ? esc(plat(m.platform)) + " : " : "") + esc(a.name) + " (" + esc(s) + ")</a>" +
+    (m && (m.version || m.sha256) ? '<p class="sha">' + (m.version ? "<span>" + esc(t("version") + " " + m.version) + "</span>" : "") + (m.sha256 ? '<span>SHA-256</span><code class="hash">' + esc(String(m.sha256).trim()) + "</code>" : "") + "</p>" : "");
 }
 function license() {
   get("/data/license.json").then(function (d) {

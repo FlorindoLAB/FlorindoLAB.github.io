@@ -141,3 +141,5 @@ code.hash{display:block;margin:8px 0 0;padding:10px 12px;background:var(--panel)
 #st .note{color:var(--muted);font-size:14px;margin:22px 0 0;max-width:70ch}
 
 .lb{background:var(--panel);border-bottom:1px solid var(--line);text-align:center;padding:8px 14px;font-size:15px}.lb a{font-weight:700;color:var(--accent-ink)}
+
+.sha{margin:8px 0 0;text-align:left;font-size:13px;color:var(--muted)}.sha span{display:block;margin-bottom:4px}.sha code.hash{margin-top:0;font-size:12.5px}

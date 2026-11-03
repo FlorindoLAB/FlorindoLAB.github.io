@@ -49,13 +49,18 @@ function blk(q) {
 }
 const bodyHtml = (s) => (s ? s.replace(/\r/g, "").split(/\n\s*\n/).map(blk).join("") : "");
 
+const platLabel = (id, lang) => { const p = (T.platforms || []).find((y) => y.id === id); return p ? loc(p, lang) : (tx(lang, "p_" + id) || id); };
+const fileInfo = (x, lang) => (x.files || []).map((f) => {
+  const l1 = [f.platform ? platLabel(f.platform, lang) : "", f.version ? tx(lang, "version") + " " + f.version : "", f.size || ""].filter(Boolean).join(", ");
+  return `<p class="sha">${l1 ? "<span>" + esc(l1) + "</span>" : ""}${f.sha256 ? `<span>SHA-256</span><code class="hash">${esc(String(f.sha256).trim())}</code>` : ""}</p>`;
+}).join("");
 function tags(x, lang) {
   const c = (x.categories || []).map((id) => {
     const k = T.categories.find((y) => y.id === id);
     return `<span class="tag cat">${esc(k ? loc(k, lang) : id)}</span>`;
   });
   if (x.isNew) c.unshift(`<span class="tag new">${esc(tx(lang, "new"))}</span>`);
-  const p = (x.platforms || []).map((id) => `<span class="tag">${esc(tx(lang, "p_" + id))}</span>`);
+  const p = (x.platforms || []).map((id) => `<span class="tag">${esc(platLabel(id, lang))}</span>`);
   if (x.status === "soon") p.push(`<span class="tag soon">${esc(tx(lang, "soon"))}</span>`);
   return `<div class="tags">${c.concat(p).join("")}</div>`;
 }
@@ -70,7 +75,7 @@ function homeMain(lang) {
 function toolMain(x, lang) {
   const web = x.webUrl ? `<p><a class="btn main" href="${esc(abs(x.webUrl))}">${esc(tx(lang, "open_web"))}</a></p>` : "";
   const dl = x.releasePrefix ? `<p><a class="btn main" href="https://github.com/${esc(S.repo)}/releases">${esc(tx(lang, "dlgh"))}</a></p>` : "";
-  return `<a class="back" href="${homeU(lang)}#/tools">${esc(tx(lang, "back"))}</a><header class="th"><h1 class="tt">${esc(loc(x.name, lang))}</h1>${tags(x, lang)}<p class="lead">${esc(loc(x.summary, lang))}</p></header><div class="tg"><div class="tmain">${bodyHtml(loc(x.description, lang))}</div><aside class="tside">${web}${dl}<p class="lic"><a href="#/license">${esc(tx(lang, "license_link"))}</a></p></aside></div>`;
+  return `<a class="back" href="${homeU(lang)}#/tools">${esc(tx(lang, "back"))}</a><header class="th"><h1 class="tt">${esc(loc(x.name, lang))}</h1>${tags(x, lang)}<p class="lead">${esc(loc(x.summary, lang))}</p></header><div class="tg"><div class="tmain">${bodyHtml(loc(x.description, lang))}</div><aside class="tside">${web}${dl}${fileInfo(x, lang)}<p class="lic"><a href="#/license">${esc(tx(lang, "license_link"))}</a></p></aside></div>`;
 }
 
 function render(o) {
@@ -133,7 +138,8 @@ for (const lang of ["fr", "en"]) {
       ld: {
         "@context": "https://schema.org", "@type": "SoftwareApplication", name, description: summary, url: ORIGIN + turl(x.id, lang), inLanguage: lang,
         applicationCategory: (x.categories || []).some((c) => MEDIA.includes(c)) ? "MultimediaApplication" : "UtilitiesApplication",
-        operatingSystem: (x.platforms || []).map((p) => OSNAME[p] || p).join(", "),
+        operatingSystem: (x.platforms || []).map((p) => { const q = (T.platforms || []).find((y) => y.id === p); return (q && (q.en || q.fr)) || OSNAME[p] || p; }).join(", "),
+        ...((x.files || []).find((f) => f.version) ? { softwareVersion: (x.files || []).find((f) => f.version).version } : {}),
         isAccessibleForFree: true, offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
         image: ORIGIN + "/assets/og-image.png", publisher: { "@type": "Organization", name: "FlorindoLAB", url: ORIGIN },
       },
