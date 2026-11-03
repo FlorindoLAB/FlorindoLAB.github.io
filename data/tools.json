@@ -126,10 +126,12 @@
         "en": "/assets/uploads/FlorindoAudioSuite User Guide.pdf"
       },
       "categories": [
-        "son"
+        "son",
+        "vst",
+        "plugin"
       ],
       "platforms": [
-        "windows"
+        "Mac"
       ],
       "webUrl": "",
       "releasePrefix": "florindoaudiosuite",
