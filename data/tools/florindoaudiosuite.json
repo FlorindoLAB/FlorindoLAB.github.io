@@ -6,8 +6,8 @@
       "en": "Florindo AudioSUITE"
     },
     "summary": {
-      "fr": "26 plugins audio gratuits et un rack pour mixer, mesurer et façonner le son, de l’égaliseur à l’accordeur. En VST3, Audio Unit et applications autonomes, pour macOS.",
-      "en": "26 free audio plug-ins and a rack to mix, measure and shape sound, from EQ to tuner. Available as VST3, Audio Unit and standalone apps, for macOS."
+      "fr": "26 plugins audio gratuits et un rack pour mixer, mesurer et façonner le son, de l’égaliseur à l’accordeur. En VST3, Audio Unit et applications autonomes, pour Windows et MacOS (Intel et silicon)",
+      "en": "26 free audio plug-ins and a rack to mix, measure and shape sound, from EQ to tuner. Available as VST3, Audio Unit and standalone apps, for Windows and macOS (Intel and Silicon)."
     },
     "categories": [
       "son",
@@ -20,7 +20,7 @@
   },
   "page": {
     "description": {
-      "fr": "J'ai créé FlorindoAudioSuite pour avoir sous la main, gratuitement, tous les outils dont j'ai besoin pour mixer, mesurer et façonner le son : 26 plugins et un rack qui les rassemble tous.\n\nOn y trouve l'essentiel du quotidien (égaliseurs, compresseurs, gate, limiteur, de-esser), des outils de mesure (niveaux, loudness, phase, spectre, comparaison avec un morceau de référence), des effets (écho, réverbération, modulation, transposition), et des outils pour les musiciens : un accordeur précis jusque dans l'extrême grave, un détecteur de tempo et de tonalité, un préampli basse et un chargeur d'IR de baffle.\n\nChaque plugin existe en VST3 pour Windows et macOS, en Audio Unit sur Mac, et en application autonome. Tout est gratuit, sans compte ni publicité.",
+      "fr": "J'ai créé FlorindoAudioSuite pour avoir sous la main tous les outils dont j'ai besoin pour mixer, mesurer et façonner le son : 26 plugins et un rack qui les rassemble tous.\n\nOn y trouve l'essentiel du quotidien (égaliseurs, compresseurs, gate, limiteur, de-esser), des outils de mesure (niveaux, loudness, phase, spectre, comparaison avec un morceau de référence), des effets (écho, réverbération, modulation, transposition), et des outils pour les musiciens : un accordeur précis jusque dans l'extrême grave, un détecteur de tempo et de tonalité, un préampli basse et un chargeur d'IR de baffle.\n\nChaque plugin existe en VST3 pour Windows et macOS, en Audio Unit sur Mac, et en application autonome. Tout est gratuit, sans compte ni publicité.",
       "en": "I created FlorindoAudioSuite to give myself free access to all the tools I need to mix, meter and shape sound: 26 plugins and one rack that brings them all together.\n\nIt includes essential everyday tools (equalizers, compressors, gate, limiter, de-esser), metering and analysis tools (levels, loudness, phase, spectrum analysis, reference track comparison), effects (delay, reverb, modulation, pitch shifting), and tools for musicians: a highly accurate tuner that works even in the extreme low frequencies, a tempo and key detector, a bass preamp and a cabinet IR loader.\n\nEach plugin is available as a VST3 for Windows and macOS, as an Audio Unit for Mac, and as a standalone application.\n\nEverything is completely free, with no account required and no ads."
     },
     "notice": {
