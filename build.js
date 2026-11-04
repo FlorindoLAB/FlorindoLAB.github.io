@@ -60,7 +60,7 @@ const fileInfo = (x, lang) => (x.files || []).map((f) => {
   return `<p class="sha">${l1 ? "<span>" + esc(l1) + "</span>" : ""}${f.sha256 ? `<span>SHA-256</span><code class="hash">${esc(String(f.sha256).trim())}</code>` : ""}</p>`;
 }).join("");
 const shotsHtml = (x, lang) => {
-  const l = (x.screenshots || []).filter(Boolean);
+  const l = (x.screenshots || []).filter(Boolean).slice(0, 12);
   return l.length ? `<h3>${esc(tx(lang, "shots"))}</h3><div class="shots">${l.map((s) => { const u = abs(s && typeof s === "object" ? s.image : s); return `<a href="${esc(u)}"><img src="${esc(u)}" alt="${esc(loc(x.name, lang))}" loading="lazy"></a>`; }).join("")}</div>` : "";
 };
 function tags(x, lang) {

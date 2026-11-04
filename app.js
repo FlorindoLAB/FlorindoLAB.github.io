@@ -119,7 +119,7 @@ function body(x) {
 }
 function shotUrl(s) { return abs(s && typeof s === "object" ? s.image : s); }
 function shots(x) {
-  var l = (x.screenshots || []).filter(Boolean);
+  var l = (x.screenshots || []).filter(Boolean).slice(0, 12);
   return l.length ? "<h3>" + esc(t("shots")) + '</h3><div class="shots">' + l.map(function (s) { var u = shotUrl(s); return '<a href="' + esc(u) + '" target="_blank" rel="noopener"><img src="' + esc(u) + '" alt="' + esc(loc(x.name)) + '" loading="lazy" decoding="async"></a>'; }).join("") + "</div>" : "";
 }
 function heroVisual() {
