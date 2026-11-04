@@ -34,12 +34,13 @@
   },
   "telechargement": {
     "releasePrefix": "florindoaudiosuite",
+    "webUrl": "",
     "anciens_ids": [
       "florindoaudiosuitemac"
     ]
   },
   "accueil": {
-    "hero": false,
+    "hero": true,
     "featured": true,
     "isNew": true,
     "order": 30
