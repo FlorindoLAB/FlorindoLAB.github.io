@@ -76,6 +76,10 @@
       ],
       "webUrl": "",
       "releasePrefix": "overlay-guides",
+      "screenshots": [
+        "/assets/uploads/overlay_preview_pour_site.webp"
+      ],
+      "hero": true,
       "featured": false,
       "isNew": true,
       "status": ""
@@ -107,6 +111,10 @@
       ],
       "webUrl": "",
       "releasePrefix": "file-renamer",
+      "screenshots": [
+        "/assets/uploads/preview_pour_site.webp"
+      ],
+      "hero": true,
       "featured": false,
       "isNew": true,
       "status": ""
