@@ -33,6 +33,7 @@ var X = {
   stats_downloads: ["Téléchargements", "Downloads"], stats_other: ["Autres fichiers", "Other files"], dl_count: ["téléchargements", "downloads"],
   car_label: ["Aperçu des outils", "Tools preview"], car_prev: ["Précédent", "Previous"], car_next: ["Suivant", "Next"], latest_all: ["Dernières versions", "Latest versions"],
   mac_hint: ["Quel Mac ? Menu Pomme > À propos de ce Mac : « Puce Apple M… » = Apple Silicon, « Processeur Intel » = Intel.", "Which Mac? Apple menu > About This Mac: “Chip Apple M…” = Apple Silicon, “Processor Intel” = Intel."],
+  copy: ["Copier", "Copy"], copied: ["Copié", "Copied"],
   car_pause: ["Mettre en pause", "Pause"], car_play: ["Reprendre", "Play"], shots: ["Captures d'écran", "Screenshots"]
 };
 Object.keys(X).forEach(function (k) { DEF[k] = { fr: X[k][0], en: X[k][1] }; });
@@ -86,7 +87,7 @@ function fill(box, x, all) {
 function tool(id) {
   var x = T.tools.filter(function (y) { return y.id === id; })[0];
   if (!x) { location.hash = "#/"; return; }
-  app.innerHTML = '<a class="back" href="' + hb() + '#/tools">' + esc(t("back")) + '</a><header class="th"><h1 class="tt">' + esc(loc(x.name)) + "</h1>" + tags(x) + '<p class="lead">' + esc(loc(x.summary)) + '</p></header><div class="tg"><div class="tmain">' + body(x) + '</div><aside class="tside">' +
+  app.innerHTML = '<a class="back" href="' + hb() + '#/tools">' + esc(t("back")) + '</a><div class="th"><h1 class="tt">' + esc(loc(x.name)) + "</h1>" + tags(x) + '<p class="lead">' + esc(loc(x.summary)) + '</p></div><div class="tg"><div class="tmain">' + body(x) + '</div><aside class="tside">' +
     (x.webUrl ? '<p><a class="btn main" href="' + esc(abs(x.webUrl)) + '">' + esc(t("open_web")) + "</a></p>" : "") +
     (x.releasePrefix ? '<div class="dl" id="dl"><p>' + esc(t("loading")) + "</p></div>" : "") + notice(x) +
     '<p class="lic"><a href="#/license">' + esc(t("license_link")) + "</a></p>" +
@@ -303,10 +304,15 @@ function groups(x, rs) {
   });
   return out.sort(function (a, b) { return (b.k.indexOf(me) === 0 ? 1 : 0) - (a.k.indexOf(me) === 0 ? 1 : 0); });
 }
+function shaBox(h) {
+  h = String(h).trim();
+  var b = h.length === 64 ? esc(h.slice(0, 32)) + "<br>" + esc(h.slice(32)) : esc(h);
+  return '<div class="sh"><span>SHA-256</span><button type="button" class="cpy" data-copy="' + esc(h) + '">' + esc(t("copy")) + '</button></div><code class="hx">' + b + "</code>";
+}
 function dlbtn(x, a, k) {
   var m = finfo(x, a) || {}, os = m.platform || k, s = m.size ? m.size : sz(a.size), h = m.sha256 || (/^sha256:/i.test(a.digest || "") ? a.digest.slice(7) : "");
   return '<a class="btn main" data-dl href="' + esc(a.browser_download_url) + '">' + (os && os !== "other" ? esc(plat(os)) + " : " : "") + esc(a.name) + " (" + esc(s) + ")</a>" +
-    (m.version || h ? '<p class="sha">' + (m.version ? "<span>" + esc(t("version") + " " + m.version) + "</span>" : "") + (h ? '<span>SHA-256</span><code class="hash">' + esc(String(h).trim()) + "</code>" : "") + "</p>" : "");
+    (m.version || h ? '<div class="sha">' + (m.version ? '<span class="sv">' + esc(t("version") + " " + m.version) + "</span>" : "") + (h ? shaBox(h) : "") + "</div>" : "");
 }
 function license() {
   get("/data/license.json").then(function (d) {
@@ -347,6 +353,13 @@ function boot() {
   sel.onchange = function () { var alt = FIXED && document.querySelector('link[rel="alternate"][hreflang="' + sel.value + '"]'); if (alt) { try { localStorage.setItem("lang", sel.value); } catch (e) {} location.href = alt.getAttribute("href") + location.hash; return; } lang = sel.value; try { localStorage.setItem("lang", lang); } catch (e) {} stat(); route(); };
   window.addEventListener("hashchange", onHash);
   app.addEventListener("click", function (e) { var a = e.target.closest && e.target.closest("a[data-dl]"); if (a) setTimeout(thanks, 400); });
+  app.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("[data-copy]");
+    if (!b) return;
+    var v = b.getAttribute("data-copy"), done = function () { b.textContent = t("copied"); setTimeout(function () { b.textContent = t("copy"); }, 1600); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(done, function () {});
+    else { var ta = document.createElement("textarea"); ta.value = v; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); done(); } catch (x) {} document.body.removeChild(ta); }
+  });
   lang = l; sel.value = l; stat(); route();
   if (FIXED === "fr" && !seen && (navigator.language || "").slice(0, 2) === "en") { var bn = document.createElement("div"); bn.className = "lb"; bn.innerHTML = '<a href="/en/">This site is also available in English</a>'; document.body.insertBefore(bn, document.body.firstChild); }
   var ig = document.getElementById("ig"); if (S.instagramUrl) { ig.href = S.instagramUrl; ig.hidden = false; }

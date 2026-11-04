@@ -95,7 +95,7 @@ function homeMain(lang) {
 function toolMain(x, lang) {
   const web = x.webUrl ? `<p><a class="btn main" href="${esc(abs(x.webUrl))}">${esc(tx(lang, "open_web"))}</a></p>` : "";
   const dl = x.releasePrefix ? `<p><a class="btn main" href="https://github.com/${esc(S.repo)}/releases">${esc(tx(lang, "dlgh"))}</a></p>` : "";
-  return `<a class="back" href="${homeU(lang)}#/tools">${esc(tx(lang, "back"))}</a><header class="th"><h1 class="tt">${esc(loc(x.name, lang))}</h1>${tags(x, lang)}<p class="lead">${esc(loc(x.summary, lang))}</p></header><div class="tg"><div class="tmain">${bodyHtml(loc(x.description, lang))}${shotsHtml(x, lang)}</div><aside class="tside">${web}${dl}${fileInfo(x, lang)}<p class="lic"><a href="#/license">${esc(tx(lang, "license_link"))}</a></p></aside></div>`;
+  return `<a class="back" href="${homeU(lang)}#/tools">${esc(tx(lang, "back"))}</a><div class="th"><h1 class="tt">${esc(loc(x.name, lang))}</h1>${tags(x, lang)}<p class="lead">${esc(loc(x.summary, lang))}</p></div><div class="tg"><div class="tmain">${bodyHtml(loc(x.description, lang))}${shotsHtml(x, lang)}</div><aside class="tside">${web}${dl}${fileInfo(x, lang)}<p class="lic"><a href="#/license">${esc(tx(lang, "license_link"))}</a></p></aside></div>`;
 }
 
 function render(o) {
