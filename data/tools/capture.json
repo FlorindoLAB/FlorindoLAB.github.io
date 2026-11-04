@@ -38,7 +38,7 @@
     "anciens_ids": []
   },
   "accueil": {
-    "hero": false,
+    "hero": true,
     "featured": false,
     "isNew": true,
     "order": 100
