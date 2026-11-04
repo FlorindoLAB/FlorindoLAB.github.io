@@ -21,6 +21,7 @@ function loadTools() {
   }).sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || String(a.id).localeCompare(String(b.id)));
   return { categories: tax.categories || [], platforms: tax.platforms || [], tools };
 }
+const FOLDER = fs.existsSync(path.join(ROOT, "data", "tools"));
 const T = loadTools();
 const I = { fr: json("i18n/fr.json"), en: json("i18n/en.json") };
 const DOMAIN = fs.existsSync(path.join(ROOT, "CNAME")) ? read("CNAME").trim() : "florindolab.com";
@@ -176,6 +177,17 @@ for (const x of T.tools) for (const old of x.anciens_ids || []) for (const lang 
   const to = turl(x.id, lang);
   write((lang === "en" ? "en/tools/" : "outils/") + old + "/index.html", `<!DOCTYPE html><html lang="${lang}"><head><meta charset="utf-8"><title>Redirection</title><meta name="robots" content="noindex"><link rel="canonical" href="${ORIGIN + to}"><meta http-equiv="refresh" content="0; url=${to}"></head><body><p><a href="${to}">${to}</a></p><script>location.replace(${JSON.stringify(to)})</script></body></html>`);
 }
+// ---- informations de construction (pour vérifier ce qui est réellement publié) ----
+const files = FOLDER ? fs.readdirSync(path.join(ROOT, "data", "tools")).filter((f) => f.endsWith(".json")) : [];
+write("build-info.txt", [
+  "FlorindoLAB - informations de construction",
+  "Date : " + new Date().toISOString(),
+  "Commit : " + (process.env.GITHUB_SHA || "inconnu"),
+  "Source des outils : " + (FOLDER ? "dossier data/tools (" + files.length + " fichier(s) : " + files.join(", ") + ")" : "ANCIEN fichier data/tools.json (le dossier data/tools est absent)"),
+  "Ancien fichier data/tools.json présent dans le dépôt : " + (fs.existsSync(path.join(ROOT, "data", "tools.json")) ? "oui (ignoré si le dossier data/tools existe)" : "non"),
+  "Outils publiés : " + T.tools.map((x) => x.id + " = " + loc(x.name, "fr")).join(" ; "),
+  "",
+].join("\n"));
 // ---- sitemap et robots ----
 const entries = [[homeU("fr"), homeU("en")], ...T.tools.map((x) => [turl(x.id, "fr"), turl(x.id, "en")])];
 const alt = (f, e) => `<xhtml:link rel="alternate" hreflang="fr" href="${ORIGIN + f}"/><xhtml:link rel="alternate" hreflang="en" href="${ORIGIN + e}"/><xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN + f}"/>`;
