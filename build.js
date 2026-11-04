@@ -8,7 +8,20 @@ const OUT = path.join(ROOT, "dist");
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
 const json = (p) => JSON.parse(read(p));
 const S = json("data/site.json");
-const T = json("data/tools.json");
+function loadTools() {
+  const dir = path.join(ROOT, "data", "tools");
+  if (!fs.existsSync(dir)) return json("data/tools.json");
+  const tax = fs.existsSync(path.join(ROOT, "data", "taxonomy.json")) ? json("data/taxonomy.json") : {};
+  const SEC = ["essentiel", "page", "telechargement", "accueil"];
+  const tools = fs.readdirSync(dir).filter((f) => f.endsWith(".json")).map((f) => {
+    const o = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8")), flat = {};
+    for (const [k, v] of Object.entries(o)) { if (SEC.includes(k) && v && typeof v === "object") Object.assign(flat, v); else flat[k] = v; }
+    flat.id = flat.id || f.replace(/\.json$/, "");
+    return flat;
+  }).sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || String(a.id).localeCompare(String(b.id)));
+  return { categories: tax.categories || [], platforms: tax.platforms || [], tools };
+}
+const T = loadTools();
 const I = { fr: json("i18n/fr.json"), en: json("i18n/en.json") };
 const DOMAIN = fs.existsSync(path.join(ROOT, "CNAME")) ? read("CNAME").trim() : "florindolab.com";
 const ORIGIN = "https://" + DOMAIN;
@@ -126,6 +139,9 @@ copyDir(ROOT, OUT);
 const write = (rel, content) => { const f = path.join(OUT, rel); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, content); };
 
 // ---- pages ----
+fs.rmSync(path.join(OUT, "data", "tools"), { recursive: true, force: true });
+fs.rmSync(path.join(OUT, "data", "taxonomy.json"), { force: true });
+write("data/tools.json", JSON.stringify(T));
 const urls = [];
 const OSNAME = { windows: "Windows", android: "Android", web: "Web browser", dctl: "DaVinci Resolve" };
 const MEDIA = ["video", "vfx", "photo", "dessin", "son"];
@@ -154,6 +170,12 @@ for (const lang of ["fr", "en"]) {
   }
 }
 
+// ---- redirections des anciens identifiants ----
+for (const x of T.tools) for (const old of x.anciens_ids || []) for (const lang of ["fr", "en"]) {
+  if (old === x.id) continue;
+  const to = turl(x.id, lang);
+  write((lang === "en" ? "en/tools/" : "outils/") + old + "/index.html", `<!DOCTYPE html><html lang="${lang}"><head><meta charset="utf-8"><title>Redirection</title><meta name="robots" content="noindex"><link rel="canonical" href="${ORIGIN + to}"><meta http-equiv="refresh" content="0; url=${to}"></head><body><p><a href="${to}">${to}</a></p><script>location.replace(${JSON.stringify(to)})</script></body></html>`);
+}
 // ---- sitemap et robots ----
 const entries = [[homeU("fr"), homeU("en")], ...T.tools.map((x) => [turl(x.id, "fr"), turl(x.id, "en")])];
 const alt = (f, e) => `<xhtml:link rel="alternate" hreflang="fr" href="${ORIGIN + f}"/><xhtml:link rel="alternate" hreflang="en" href="${ORIGIN + e}"/><xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN + f}"/>`;

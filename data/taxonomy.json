@@ -1,0 +1,50 @@
+{
+  "categories": [
+    {
+      "id": "video",
+      "fr": "Vidéo",
+      "en": "Video"
+    },
+    {
+      "id": "vfx",
+      "fr": "VFX",
+      "en": "VFX"
+    },
+    {
+      "id": "photo",
+      "fr": "Photo",
+      "en": "Photo"
+    },
+    {
+      "id": "ecriture",
+      "fr": "Écriture",
+      "en": "Writing"
+    },
+    {
+      "id": "dessin",
+      "fr": "Dessin",
+      "en": "Drawing"
+    },
+    {
+      "id": "son",
+      "fr": "Son",
+      "en": "Sound"
+    },
+    {
+      "id": "misc",
+      "fr": "Divers",
+      "en": "Misc"
+    },
+    {
+      "id": "vst",
+      "fr": "VST",
+      "en": "VST"
+    },
+    {
+      "id": "plugin",
+      "fr": "Plugin",
+      "en": "Plugin"
+    }
+  ],
+  "platforms": []
+}
