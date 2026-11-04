@@ -54,7 +54,8 @@ const norm = (s) => String(s == null ? "" : s).trim().toLowerCase();
 const cfind = (v) => (T.categories || []).find((y) => [y.id, y.fr, y.en].some((z) => norm(z) === norm(v)));
 const catLabel = (v, lang) => { const c = cfind(v); return c ? loc(c, lang) : String(v).trim(); };
 const catId = (v) => { const c = cfind(v); return c ? norm(c.id || c.fr) : norm(v); };
-const platLabel = (v, lang) => { const p = (T.platforms || []).find((y) => [y.id, y.fr, y.en].some((z) => norm(z) === norm(v))); return p ? loc(p, lang) : (tx(lang, "p_" + norm(v)) || String(v).trim()); };
+const PB = { windows: "Windows", macos: "macOS", mac: "macOS", linux: "Linux", ios: "iOS", android: "Android" };
+const platLabel = (v, lang) => { const p = (T.platforms || []).find((y) => [y.id, y.fr, y.en].some((z) => norm(z) === norm(v))); return p ? loc(p, lang) : (PB[norm(v)] || tx(lang, "p_" + norm(v)) || String(v).trim()); };
 const fileInfo = (x, lang) => (x.files || []).map((f) => {
   const l1 = [f.platform ? platLabel(f.platform, lang) : "", f.version ? tx(lang, "version") + " " + f.version : "", f.size || ""].filter(Boolean).join(", ");
   return `<p class="sha">${l1 ? "<span>" + esc(l1) + "</span>" : ""}${f.sha256 ? `<span>SHA-256</span><code class="hash">${esc(String(f.sha256).trim())}</code>` : ""}</p>`;

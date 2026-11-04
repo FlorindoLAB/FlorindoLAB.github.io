@@ -31,7 +31,9 @@ var X = {
   stats_note: ["Ces chiffres comptent tous les téléchargements du fichier (depuis le site ou par lien direct, robots inclus) et ne mesurent pas le nombre de visiteurs.", "These figures count every download of the file (from the site or through a direct link, bots included) and do not measure the number of visitors."],
   stats_total: ["Téléchargements au total", "Total downloads"], stats_tools: ["Outils publiés", "Published tools"], stats_versions: ["Versions publiées", "Published versions"],
   stats_downloads: ["Téléchargements", "Downloads"], stats_other: ["Autres fichiers", "Other files"], dl_count: ["téléchargements", "downloads"],
-  car_label: ["Aperçu des outils", "Tools preview"], car_prev: ["Précédent", "Previous"], car_next: ["Suivant", "Next"], shots: ["Captures d'écran", "Screenshots"]
+  car_label: ["Aperçu des outils", "Tools preview"], car_prev: ["Précédent", "Previous"], car_next: ["Suivant", "Next"], latest_all: ["Dernières versions", "Latest versions"],
+  mac_hint: ["Quel Mac ? Menu Pomme > À propos de ce Mac : « Puce Apple M… » = Apple Silicon, « Processeur Intel » = Intel.", "Which Mac? Apple menu > About This Mac: “Chip Apple M…” = Apple Silicon, “Processor Intel” = Intel."],
+  car_pause: ["Mettre en pause", "Pause"], car_play: ["Reprendre", "Play"], shots: ["Captures d'écran", "Screenshots"]
 };
 Object.keys(X).forEach(function (k) { DEF[k] = { fr: X[k][0], en: X[k][1] }; });
 function t(k) { return (L[lang] && L[lang][k]) || (L.en && L.en[k]) || (DEF[k] && (DEF[k][lang] || DEF[k].en)) || k; }
@@ -67,12 +69,18 @@ function releases() {
 function fill(box, x, all) {
   var p = x.releasePrefix + "-v", rs = all.filter(function (r) { return !r.draft && r.tag_name.indexOf(p) === 0; });
   if (!rs.length) { box.innerHTML = '<p class="empty">' + esc(t("no_release")) + "</p>"; return; }
-  var r = rs[0];
   var rows = rs.map(function (q) {
     return "<tr><td>" + esc(q.tag_name.slice(p.length)) + "</td><td>" + esc(dt(q.published_at)) + "</td><td>" + esc(note(q.body)) + "</td><td>" + q.assets.map(function (a) { return '<a data-dl href="' + esc(a.browser_download_url) + '">' + esc(a.name) + "</a>"; }).join("<br>") + "</td></tr>";
   }).join("");
-  box.innerHTML = '<div class="dl-head"><div><h2>' + esc(t("latest")) + " " + esc(r.tag_name.slice(p.length)) + '</h2><p class="ver">' + esc(dt(r.published_at)) + "</p>" + cnt(rs) + "</div><div>" +
-    r.assets.map(function (a) { return dlbtn(x, a); }).join("") + "</div></div>" +
+  var gs = groups(x, rs), rl = [], head, ks = gs.map(function (g) { return g.k; });
+  gs.forEach(function (g) { if (rl.indexOf(g.r) < 0) rl.push(g.r); });
+  if (rl.length <= 1) {
+    var r = rl[0] || rs[0];
+    head = '<div class="dl-head"><div><h2>' + esc(t("latest")) + " " + esc(r.tag_name.slice(p.length)) + '</h2><p class="ver">' + esc(dt(r.published_at)) + "</p>" + cnt(rs) + "</div><div>" + gs.map(function (g) { return dlbtn(x, g.a, g.k); }).join("") + "</div></div>";
+  } else {
+    head = '<div class="dl-head"><h2>' + esc(t("latest_all")) + "</h2>" + cnt(rs) + "</div>" + gs.map(function (g) { return '<div class="pg"><p class="pn"><b>' + esc(plat(g.k)) + "</b> " + esc(g.r.tag_name.slice(p.length)) + ", " + esc(dt(g.r.published_at)) + "</p>" + dlbtn(x, g.a, "") + "</div>"; }).join("");
+  }
+  box.innerHTML = head + (ks.indexOf("macos-arm") > -1 && ks.indexOf("macos-intel") > -1 ? '<p class="hint">' + esc(t("mac_hint")) + "</p>" : "") +
     (rs.length > 1 ? "<details><summary>" + esc(t("history")) + '</summary><div class="scroll"><table><thead><tr><th>' + esc(t("version")) + "</th><th>" + esc(t("date")) + "</th><th>" + esc(t("notes")) + "</th><th>" + esc(t("files")) + "</th></tr></thead><tbody>" + rows + "</tbody></table></div></details>" : "");
 }
 function tool(id) {
@@ -130,7 +138,7 @@ function heroVisual() {
   return '<div class="car" role="region" aria-roledescription="carousel" aria-label="' + esc(t("car_label")) + '">' + s.map(function (x, i) {
     var im = (x.screenshots || []).filter(Boolean)[0];
     return '<a class="slide' + (i ? "" : " on") + '" href="' + turl(x.id) + '">' + (im ? '<img src="' + esc(shotUrl(im)) + '" alt=""' + (i ? ' loading="lazy"' : "") + ' decoding="async">' : '<div class="noimg">' + esc(loc(x.name)) + "</div>") + '<span class="cap"><b>' + esc(loc(x.name)) + "</b>" + esc(loc(x.summary)) + "</span></a>";
-  }).join("") + (s.length > 1 ? '<button type="button" class="cb prev" aria-label="' + esc(t("car_prev")) + '">&#8249;</button><button type="button" class="cb next" aria-label="' + esc(t("car_next")) + '">&#8250;</button><div class="dots">' + s.map(function () { return '<button type="button" class="dot"></button>'; }).join("") + "</div>" : "") + "</div>";
+  }).join("") + (s.length > 1 ? '<button type="button" class="cb prev" aria-label="' + esc(t("car_prev")) + '">&#8249;</button><button type="button" class="cb next" aria-label="' + esc(t("car_next")) + '">&#8250;</button><div class="dots">' + s.map(function () { return '<button type="button" class="dot"></button>'; }).join("") + '</div><button type="button" class="cp" aria-label="' + esc(t("car_pause")) + '">&#10074;&#10074;</button>' : "") + "</div>";
 }
 var carT = null;
 function carousel() {
@@ -148,12 +156,13 @@ function carousel() {
   if (pv) pv.onclick = function () { go(i - 1); };
   if (nx) nx.onclick = function () { go(i + 1); };
   dots.forEach(function (d, k) { d.onclick = function () { go(k); }; });
-  ["mouseenter", "focusin"].forEach(function (ev) { c.addEventListener(ev, function () { hov = true; }); });
-  ["mouseleave", "focusout"].forEach(function (ev) { c.addEventListener(ev, function () { hov = false; }); });
+  c.addEventListener("focusin", function () { hov = true; });
+  c.addEventListener("focusout", function () { hov = false; });
+  var cp = c.querySelector(".cp"), paused = false;
+  if (cp) cp.onclick = function () { paused = !paused; cp.innerHTML = paused ? "&#9654;" : "&#10074;&#10074;"; cp.setAttribute("aria-label", t(paused ? "car_play" : "car_pause")); };
   c.addEventListener("touchstart", function (e) { x0 = e.touches[0].clientX; }, { passive: true });
   c.addEventListener("touchend", function (e) { if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; if (Math.abs(dx) > 40) go(i + (dx < 0 ? 1 : -1)); x0 = null; });
-  var rm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (sl.length > 1 && !rm) carT = setInterval(function () { if (!document.body.contains(c)) { clearInterval(carT); carT = null; return; } if (!hov) go(i + 1); }, 5000);
+  if (sl.length > 1) carT = setInterval(function () { if (!document.body.contains(c)) { clearInterval(carT); carT = null; return; } if (!hov && !paused && !document.hidden) go(i + 1); }, 5000);
   go(0);
 }
 function thanks() {
@@ -253,13 +262,51 @@ function catList() {
 function plat(v) {
   var n = norm(v), p = (T.platforms || []).filter(function (y) { return norm(y.id) === n || norm(y.fr) === n || norm(y.en) === n; })[0];
   if (p) return loc(p);
+  var B = { windows: "Windows", macos: "macOS", mac: "macOS", "macos-arm": "macOS (Apple Silicon)", "macos-intel": "macOS (Intel)", linux: "Linux", ios: "iOS", android: "Android" };
+  if (B[n]) return B[n];
   var k = t("p_" + n); return k === "p_" + n ? String(v).trim() : k;
 }
 function finfo(x, a) { var n = (a.name || "").toLowerCase(); return (x.files || []).filter(function (f) { return f && f.name && f.name.toLowerCase() === n; })[0]; }
-function dlbtn(x, a) {
-  var m = finfo(x, a), s = m && m.size ? m.size : sz(a.size);
-  return '<a class="btn main" data-dl href="' + esc(a.browser_download_url) + '">' + (m && m.platform ? esc(plat(m.platform)) + " : " : "") + esc(a.name) + " (" + esc(s) + ")</a>" +
-    (m && (m.version || m.sha256) ? '<p class="sha">' + (m.version ? "<span>" + esc(t("version") + " " + m.version) + "</span>" : "") + (m.sha256 ? '<span>SHA-256</span><code class="hash">' + esc(String(m.sha256).trim()) + "</code>" : "") + "</p>" : "");
+function osOf(n) {
+  n = (n || "").toLowerCase();
+  var m = function (re) { return re.test(n); };
+  if (m(/\.(exe|msi)$/) || m(/(^|[-_. ])win(dows)?([-_. ]|$)/)) return "windows";
+  if (m(/\.(apk|aab)$/)) return "android";
+  if (m(/\.(appimage|deb|rpm)$/) || m(/(^|[-_. ])linux([-_. ]|$)/)) return "linux";
+  if (m(/\.(dmg|pkg)$/) || m(/(^|[-_. ])(mac|macos|osx)([-_. ]|$)/)) {
+    if (m(/(^|[-_. ])universal([-_. ]|$)/)) return "macos";
+    if (m(/(^|[-_. ])(arm64|aarch64|silicon|applesilicon|m1|m2|m3|m4)([-_. ]|$)/)) return "macos-arm";
+    if (m(/(^|[-_. ])(intel|x64|x86_64|x86-64|amd64)([-_. ]|$)/)) return "macos-intel";
+    return "macos";
+  }
+  return "";
+}
+function pkey(v) { var n = norm(v); return { mac: "macos", osx: "macos", win: "windows" }[n] || n; }
+function akey(x, a) {
+  var k = osOf(a.name);
+  if (k) return k;
+  var ps = (x.platforms || []).map(pkey).filter(function (p, i, l) { return p && l.indexOf(p) === i; });
+  return ps.length === 1 ? ps[0] : "other";
+}
+function mine() {
+  var u = navigator.userAgent || "";
+  return /Windows/.test(u) ? "windows" : /Android/.test(u) ? "android" : /Macintosh|Mac OS X/.test(u) ? "macos" : /Linux/.test(u) ? "linux" : "~";
+}
+function groups(x, rs) {
+  var seen = {}, out = [], orel = null, me = mine();
+  rs.forEach(function (r) {
+    r.assets.forEach(function (a) {
+      var k = akey(x, a);
+      if (k === "other") { if (!orel) orel = r; if (orel === r) out.push({ k: k, r: r, a: a }); return; }
+      if (!seen[k]) { seen[k] = 1; out.push({ k: k, r: r, a: a }); }
+    });
+  });
+  return out.sort(function (a, b) { return (b.k.indexOf(me) === 0 ? 1 : 0) - (a.k.indexOf(me) === 0 ? 1 : 0); });
+}
+function dlbtn(x, a, k) {
+  var m = finfo(x, a) || {}, os = m.platform || k, s = m.size ? m.size : sz(a.size), h = m.sha256 || (/^sha256:/i.test(a.digest || "") ? a.digest.slice(7) : "");
+  return '<a class="btn main" data-dl href="' + esc(a.browser_download_url) + '">' + (os && os !== "other" ? esc(plat(os)) + " : " : "") + esc(a.name) + " (" + esc(s) + ")</a>" +
+    (m.version || h ? '<p class="sha">' + (m.version ? "<span>" + esc(t("version") + " " + m.version) + "</span>" : "") + (h ? '<span>SHA-256</span><code class="hash">' + esc(String(h).trim()) + "</code>" : "") + "</p>" : "");
 }
 function license() {
   get("/data/license.json").then(function (d) {
