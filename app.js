@@ -349,7 +349,7 @@ function boot() {
   if (!l) l = (navigator.language || "fr").slice(0, 2);
   if (S.languages.indexOf(l) < 0) l = S.languages.indexOf("en") > -1 ? "en" : S.languages[0];
   if (FIXED && S.languages.indexOf(FIXED) > -1) { l = FIXED; try { localStorage.setItem("lang", l); } catch (e) {} }
-  sel.innerHTML = S.languages.map(function (c) { return '<option value="' + esc(c) + '">' + esc(L[c].lang_name) + "</option>"; }).join("");
+  sel.innerHTML = S.languages.map(function (c) { return '<option value="' + esc(c) + '">' + esc(window.matchMedia && window.matchMedia("(max-width: 640px)").matches ? c.toUpperCase() : L[c].lang_name) + "</option>"; }).join("");
   sel.onchange = function () { var alt = FIXED && document.querySelector('link[rel="alternate"][hreflang="' + sel.value + '"]'); if (alt) { try { localStorage.setItem("lang", sel.value); } catch (e) {} location.href = alt.getAttribute("href") + location.hash; return; } lang = sel.value; try { localStorage.setItem("lang", lang); } catch (e) {} stat(); route(); };
   window.addEventListener("hashchange", onHash);
   app.addEventListener("click", function (e) { var a = e.target.closest && e.target.closest("a[data-dl]"); if (a) setTimeout(thanks, 400); });
