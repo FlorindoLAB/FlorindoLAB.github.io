@@ -21,6 +21,17 @@ function loadTools() {
   }).sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || String(a.id).localeCompare(String(b.id)));
   return { categories: tax.categories || [], platforms: tax.platforms || [], tools };
 }
+function loadLegal() {
+  const base = fs.existsSync(path.join(ROOT, "data", "legal.json")) ? json("data/legal.json") : { pages: [] };
+  const pages = [...(base.pages || [])];
+  const dir = path.join(ROOT, "data", "pages");
+  if (fs.existsSync(dir)) for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json")).sort()) {
+    const o = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+    o.id = o.id || f.replace(/\.json$/, "");
+    if (!pages.some((p) => p.id === o.id)) pages.push(o);
+  }
+  return { pages };
+}
 const FOLDER = fs.existsSync(path.join(ROOT, "data", "tools"));
 const T = loadTools();
 const I = { fr: json("i18n/fr.json"), en: json("i18n/en.json") };
@@ -47,19 +58,24 @@ const sub = (s, re, fn) => { if (!re.test(s)) throw new Error("Motif introuvable
 function rich(q) {
   return esc(q)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`\n]+)`/g, "<code>$1</code>")
     .replace(/\b[0-9A-Fa-f]{64}\b/g, '<code class="hash">$&</code>')
+    .replace(/!\[([^\]]*)\]\((\/[^)\s]+|https?:\/\/[^)\s]+)\)/g, '<img class="mi" src="$2" alt="$1" loading="lazy">')
     .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|#\/[^)\s]*)\)/g, (m, a, u) => `<a href="${u}"${u[0] === "#" ? "" : ' target="_blank" rel="noopener"'}>${a}</a>`)
     .replace(/\n/g, "<br>");
 }
 function blk(q) {
   q = q.trim();
   if (!q) return "";
-  if (/^## /.test(q)) {
-    const n = q.indexOf("\n"), r = n < 0 ? "" : q.slice(n + 1).trim();
-    return "<h3>" + rich((n < 0 ? q : q.slice(0, n)).slice(3)) + "</h3>" + (r ? blk(r) : "");
+  const hh = /^(#{2,3}) /.exec(q);
+  if (hh) {
+    const n = q.indexOf("\n"), r = n < 0 ? "" : q.slice(n + 1).trim(), tg = hh[1].length === 2 ? "h3" : "h4";
+    return `<${tg}>` + rich((n < 0 ? q : q.slice(0, n)).slice(hh[0].length)) + `</${tg}>` + (r ? blk(r) : "");
   }
   const ls = q.split("\n");
   if (ls.every((l) => /^- /.test(l.trim()))) return "<ul>" + ls.map((l) => "<li>" + rich(l.trim().slice(2)) + "</li>").join("") + "</ul>";
+  if (ls.every((l) => /^\d+[.)] /.test(l.trim()))) return "<ol>" + ls.map((l) => "<li>" + rich(l.trim().replace(/^\d+[.)] /, "")) + "</li>").join("") + "</ol>";
+  if (ls.every((l) => /^>/.test(l.trim()))) return '<blockquote class="callout">' + ls.map((l) => rich(l.trim().replace(/^> ?/, ""))).join("<br>") + "</blockquote>";
   return "<p>" + rich(q) + "</p>";
 }
 const bodyHtml = (s) => (s ? s.replace(/\r/g, "").split(/\n\s*\n/).map(blk).join("") : "");
@@ -143,6 +159,9 @@ const write = (rel, content) => { const f = path.join(OUT, rel); fs.mkdirSync(pa
 fs.rmSync(path.join(OUT, "data", "tools"), { recursive: true, force: true });
 fs.rmSync(path.join(OUT, "data", "taxonomy.json"), { force: true });
 write("data/tools.json", JSON.stringify(T));
+const LEGAL = loadLegal();
+fs.rmSync(path.join(OUT, "data", "pages"), { recursive: true, force: true });
+write("data/legal.json", JSON.stringify(LEGAL));
 const urls = [];
 const OSNAME = { windows: "Windows", android: "Android", web: "Web browser", dctl: "DaVinci Resolve" };
 const MEDIA = ["video", "vfx", "photo", "dessin", "son"];
@@ -171,6 +190,23 @@ for (const lang of ["fr", "en"]) {
   }
 }
 
+// ---- pages d'information avec adresse propre (ex. /securite/) ----
+const pageUrl = (p, lang) => { const s = p.slug && (p.slug[lang] || p.slug.fr); return s ? (lang === "en" ? "/en/" : "/") + s + "/" : null; };
+const firstPara = (s) => { const b = String(s || "").replace(/\r/g, "").split(/\n\s*\n/).map((x) => x.trim()).find((x) => x && !/^#{2,3} /.test(x) && !/^(- |\d+[.)] )/.test(x)) || ""; const t = b.replace(/^> ?/gm, "").replace(/\*\*/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/`/g, "").replace(/\s+/g, " ").trim(); return t.length > 155 ? t.slice(0, 154).trimEnd() + "…" : t; };
+const pageEntries = [];
+for (const p of LEGAL.pages) {
+  if (!p.slug) continue;
+  for (const lang of ["fr", "en"]) {
+    const url = pageUrl(p, lang), title = loc(p.title, lang), body = loc(p.body, lang);
+    write(url.slice(1) + "index.html", render({
+      lang, route: "legal/" + p.id, path: url, fr: pageUrl(p, "fr"), en: pageUrl(p, "en"),
+      title: title + " | FlorindoLAB", desc: firstPara(body),
+      main: `<a class="back" href="${homeU(lang)}#/tools">${esc(tx(lang, "back"))}</a><section class="sec law"><h1 class="tt">${esc(title)}</h1>${bodyHtml(body)}</section>`,
+      ld: { "@context": "https://schema.org", "@type": "WebPage", name: title, url: ORIGIN + url, inLanguage: lang },
+    }));
+  }
+  pageEntries.push([pageUrl(p, "fr"), pageUrl(p, "en")]);
+}
 // ---- redirections des anciens identifiants ----
 for (const x of T.tools) for (const old of x.anciens_ids || []) for (const lang of ["fr", "en"]) {
   if (old === x.id) continue;
@@ -189,7 +225,7 @@ write("build-info.txt", [
   "",
 ].join("\n"));
 // ---- sitemap et robots ----
-const entries = [[homeU("fr"), homeU("en")], ...T.tools.map((x) => [turl(x.id, "fr"), turl(x.id, "en")])];
+const entries = [[homeU("fr"), homeU("en")], ...T.tools.map((x) => [turl(x.id, "fr"), turl(x.id, "en")]), ...pageEntries];
 const alt = (f, e) => `<xhtml:link rel="alternate" hreflang="fr" href="${ORIGIN + f}"/><xhtml:link rel="alternate" hreflang="en" href="${ORIGIN + e}"/><xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN + f}"/>`;
 const sm = entries.flatMap(([f, e]) => [f, e].map((u) => `<url><loc>${ORIGIN + u}</loc>${alt(f, e)}</url>`)).join("\n");
 write("sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${sm}\n</urlset>\n`);

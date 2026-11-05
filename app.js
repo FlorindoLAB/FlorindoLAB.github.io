@@ -34,6 +34,9 @@ var X = {
   car_label: ["Aperçu des outils", "Tools preview"], car_prev: ["Précédent", "Previous"], car_next: ["Suivant", "Next"], latest_all: ["Dernières versions", "Latest versions"],
   mac_hint: ["Quel Mac ? Menu Pomme > À propos de ce Mac : « Puce Apple M… » = Apple Silicon, « Processeur Intel » = Intel.", "Which Mac? Apple menu > About This Mac: “Chip Apple M…” = Apple Silicon, “Processor Intel” = Intel."],
   copy: ["Copier", "Copy"], copied: ["Copié", "Copied"],
+  banner: ["Développeur indépendant : mes logiciels ne sont pas encore signés (le certificat est payant), donc Windows et macOS affichent une alerte au premier lancement.", "Independent developer here: my software isn't code-signed yet (the certificate is paid), so Windows and macOS show a warning on first launch."],
+  banner_link: ["Pourquoi, et comment faire", "Why, and what to do"],
+  alertnote: ["Une alerte au premier lancement ? C'est normal : voici pourquoi et comment faire.", "A warning on first launch? That's normal: here's why and what to do."],
   car_pause: ["Mettre en pause", "Pause"], car_play: ["Reprendre", "Play"], shots: ["Captures d'écran", "Screenshots"]
 };
 Object.keys(X).forEach(function (k) { DEF[k] = { fr: X[k][0], en: X[k][1] }; });
@@ -81,7 +84,7 @@ function fill(box, x, all) {
   } else {
     head = '<div class="dl-head"><h2>' + esc(t("latest_all")) + "</h2>" + cnt(rs) + "</div>" + gs.map(function (g) { return '<div class="pg"><p class="pn"><b>' + esc(plat(g.k)) + "</b> " + esc(g.r.tag_name.slice(p.length)) + ", " + esc(dt(g.r.published_at)) + "</p>" + dlbtn(x, g.a, "") + "</div>"; }).join("");
   }
-  box.innerHTML = head + (ks.indexOf("macos-arm") > -1 && ks.indexOf("macos-intel") > -1 ? '<p class="hint">' + esc(t("mac_hint")) + "</p>" : "") +
+  box.innerHTML = head + (ks.indexOf("macos-arm") > -1 && ks.indexOf("macos-intel") > -1 ? '<p class="hint">' + esc(t("mac_hint")) + "</p>" : "") + (secPage() ? '<p class="alertnote"><a href="' + esc(secUrl()) + '">' + esc(t("alertnote")) + "</a></p>" : "") +
     (rs.length > 1 ? "<details><summary>" + esc(t("history")) + '</summary><div class="scroll"><table><thead><tr><th>' + esc(t("version")) + "</th><th>" + esc(t("date")) + "</th><th>" + esc(t("notes")) + "</th><th>" + esc(t("files")) + "</th></tr></thead><tbody>" + rows + "</tbody></table></div></details>" : "");
 }
 function tool(id) {
@@ -108,12 +111,15 @@ function vid(u) {
   m = /vimeo\.com\/(\d+)/.exec(u || "");
   return m ? "https://player.vimeo.com/video/" + m[1] : "";
 }
-function rich(q) { return esc(q).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\b[0-9A-Fa-f]{64}\b/g, '<code class="hash">$&</code>').replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|#\/[^)\s]*)\)/g, function (m, a, u) { return '<a href="' + u + '"' + (u.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">" + a + "</a>"; }).replace(/\n/g, "<br>"); }
+function rich(q) { return esc(q).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/`([^`\n]+)`/g, "<code>$1</code>").replace(/\b[0-9A-Fa-f]{64}\b/g, '<code class="hash">$&</code>').replace(/!\[([^\]]*)\]\((\/[^)\s]+|https?:\/\/[^)\s]+)\)/g, '<img class="mi" src="$2" alt="$1" loading="lazy">').replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|#\/[^)\s]*)\)/g, function (m, a, u) { return '<a href="' + u + '"' + (u.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">" + a + "</a>"; }).replace(/\n/g, "<br>"); }
 function blk(q) {
   q = q.trim();
-  if (/^## /.test(q)) { var n = q.indexOf("\n"), r = n < 0 ? "" : q.slice(n + 1).trim(); return "<h3>" + rich((n < 0 ? q : q.slice(0, n)).slice(3)) + "</h3>" + (r ? blk(r) : ""); }
+  var hh = /^(#{2,3}) /.exec(q);
+  if (hh) { var n = q.indexOf("\n"), r = n < 0 ? "" : q.slice(n + 1).trim(), tg = hh[1].length === 2 ? "h3" : "h4"; return "<" + tg + ">" + rich((n < 0 ? q : q.slice(0, n)).slice(hh[0].length)) + "</" + tg + ">" + (r ? blk(r) : ""); }
   var ls = q.split("\n");
   if (ls.every(function (l) { return /^- /.test(l.trim()); })) return "<ul>" + ls.map(function (l) { return "<li>" + rich(l.trim().slice(2)) + "</li>"; }).join("") + "</ul>";
+  if (ls.every(function (l) { return /^\d+[.)] /.test(l.trim()); })) return "<ol>" + ls.map(function (l) { return "<li>" + rich(l.trim().replace(/^\d+[.)] /, "")) + "</li>"; }).join("") + "</ol>";
+  if (ls.every(function (l) { return /^>/.test(l.trim()); })) return '<blockquote class="callout">' + ls.map(function (l) { return rich(l.trim().replace(/^> ?/, "")); }).join("<br>") + "</blockquote>";
   var hm = /\b[0-9A-Fa-f]{64}\b/.exec(q);
   if (hm) {
     var pre = q.slice(0, hm.index), k = Math.max(pre.lastIndexOf(". "), pre.lastIndexOf("! "), pre.lastIndexOf("? "));
@@ -170,7 +176,7 @@ function thanks() {
   var d = document.getElementById("thx");
   if (!d) { d = document.createElement("dialog"); d.id = "thx"; document.body.appendChild(d); d.addEventListener("click", function (e) { if (e.target === d) d.close(); }); }
   if (d.open) return;
-  d.innerHTML = '<button type="button" class="x" id="thx-x" aria-label="' + esc(t("close")) + '">&times;</button><h2>' + esc(t("thanks_title")) + "</h2><p>" + esc(t("thanks_text")) + '</p><p class="soft">' + esc(t("thanks_free")) + '</p><div class="acts"><a class="btn main" href="' + esc(S.donateUrl) + '" target="_blank" rel="noopener">' + esc(t("coffee")) + "</a>" +
+  d.innerHTML = '<button type="button" class="x" id="thx-x" aria-label="' + esc(t("close")) + '">&times;</button><h2>' + esc(t("thanks_title")) + "</h2><p>" + esc(t("thanks_text")) + '</p>' + (secPage() ? '<p class="soft2"><a href="' + esc(secUrl()) + '">' + esc(t("alertnote")) + "</a></p>" : "") + '<p class="soft">' + esc(t("thanks_free")) + '</p><div class="acts"><a class="btn main" href="' + esc(S.donateUrl) + '" target="_blank" rel="noopener">' + esc(t("coffee")) + "</a>" +
     (S.instagramUrl ? '<a class="btn" href="' + esc(S.instagramUrl) + '" target="_blank" rel="noopener">' + esc(t("follow_ig")) + "</a>" : "") + "</div>";
   d.querySelector("#thx-x").onclick = function () { d.close(); };
   if (d.showModal) d.showModal(); else d.setAttribute("open", "");
@@ -249,6 +255,20 @@ function statsHtml(all) {
       return '<div class="stb"><h3><span>' + esc(b.name) + "</span><span>" + nf(b.tot) + '</span></h3><div class="scroll"><table><thead><tr><th>' + esc(t("version")) + "</th><th>" + esc(t("date")) + "</th><th>" + esc(t("stats_downloads")) + "</th></tr></thead><tbody>" +
         b.rs.map(function (r) { return "<tr><td>" + esc(b.p ? r.tag_name.slice(b.p.length) : r.tag_name) + "</td><td>" + esc(dt(r.published_at)) + "</td><td>" + nf(dls(r)) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
     }).join("") + '<p class="note">' + esc(t("stats_note")) + "</p>";
+}
+function pageUrl(p) { var s = p.slug && (p.slug[lang] || p.slug.fr); return s ? (lang === "en" ? "/en/" : "/") + s + "/" : "#/legal/" + p.id; }
+function secPage() { return LG.filter(function (p) { return p.id === "securite"; })[0]; }
+function secUrl() { var p = secPage(); return p ? pageUrl(p) : ""; }
+function banner() {
+  var el = document.getElementById("bn"), txt = S.bannerOff ? "" : ((S.banner && loc(S.banner)) || t("banner")), off = false;
+  try { off = localStorage.getItem("bn_v1") === "1"; } catch (e) {}
+  if (!txt || off || !secPage()) { if (el && el.parentNode) el.parentNode.removeChild(el); return; }
+  if (!el) {
+    el = document.createElement("div"); el.id = "bn"; el.className = "bn"; el.setAttribute("role", "note");
+    document.body.insertBefore(el, document.body.firstChild);
+    el.addEventListener("click", function (e) { if (e.target.closest && e.target.closest(".bx")) { try { localStorage.setItem("bn_v1", "1"); } catch (x) {} if (el.parentNode) el.parentNode.removeChild(el); } });
+  }
+  el.innerHTML = "<span>" + esc(txt) + ' <a href="' + esc(secUrl()) + '">' + esc(t("banner_link")) + '</a></span><button type="button" class="bx" aria-label="' + esc(t("close")) + '">&times;</button>';
 }
 function norm(s) { return String(s == null ? "" : s).trim().toLowerCase(); }
 function cfind(v) { var n = norm(v); return (T.categories || []).filter(function (y) { return norm(y.id) === n || norm(y.fr) === n || norm(y.en) === n; })[0]; }
@@ -342,7 +362,8 @@ function stat() {
   if (!FIXED) document.title = "FlorindoLAB – " + t("tagline");
   if (FIXED) { var br = document.querySelector(".brand"); if (br) br.setAttribute("href", hb()); var nt = document.querySelector('nav a[data-i18n="nav_tools"]'); if (nt) nt.setAttribute("href", hb() + "#/tools"); }
   var lg = document.getElementById("lg");
-  if (lg) lg.innerHTML = LG.map(function (p) { return '<a href="#/legal/' + esc(p.id) + '">' + esc(loc(p.title)) + "</a>"; }).join(" ");
+  if (lg) lg.innerHTML = LG.map(function (p) { return '<a href="' + esc(pageUrl(p)) + '">' + esc(loc(p.title)) + "</a>"; }).join(" ");
+  banner();
 }
 function boot() {
   var l = null, seen = false; try { l = localStorage.getItem("lang"); seen = !!l; } catch (e) {}

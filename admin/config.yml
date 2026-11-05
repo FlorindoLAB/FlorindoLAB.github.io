@@ -133,6 +133,14 @@ collections:
           - {label: "Lien Ko-fi", name: donateUrl, widget: string}
           - {label: "Lien Instagram", name: instagramUrl, widget: string, required: false}
           - {label: "Clé du formulaire de contact (Web3Forms)", name: contactKey, widget: string, required: false}
+          - label: "Bandeau d'information : texte personnalisé (facultatif, remplace le texte par défaut)"
+            name: banner
+            widget: object
+            required: false
+            fields:
+              - {label: Français, name: fr, widget: text, required: false}
+              - {label: English, name: en, widget: text, required: false}
+          - {label: "Masquer le bandeau d'information", name: bannerOff, widget: boolean, default: false, required: false}
           - label: "Langues du site (codes)"
             name: languages
             widget: list
@@ -260,3 +268,33 @@ collections:
                 fields:
                   - {label: Français, name: fr, widget: text}
                   - {label: English, name: en, widget: text}
+  - name: pages
+    label: "Pages d'information"
+    label_singular: "page"
+    folder: data/pages
+    create: true
+    format: json
+    extension: json
+    identifier_field: id
+    summary: "{{id}}"
+    fields:
+      - {label: "Identifiant (minuscules, sans espace)", name: id, widget: string}
+      - label: "Titre"
+        name: title
+        widget: object
+        fields:
+          - {label: Français, name: fr, widget: string}
+          - {label: "English (facultatif)", name: en, widget: string, required: false}
+      - label: "Texte (## titre, ### sous-titre, - liste, 1. étapes, > encadré, **gras**, `code`, [mot](adresse))"
+        name: body
+        widget: object
+        fields:
+          - {label: Français, name: fr, widget: text}
+          - {label: "English (facultatif)", name: en, widget: text, required: false}
+      - label: "Adresse de la page (sans espaces ni accents, ex. securite)"
+        name: slug
+        widget: object
+        required: false
+        fields:
+          - {label: Français, name: fr, widget: string, required: false}
+          - {label: English, name: en, widget: string, required: false}
