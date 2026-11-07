@@ -29,6 +29,11 @@
       "id": "plugin",
       "fr": "Plugin",
       "en": "Plugin"
+    },
+    {
+      "id": "web",
+      "fr": "Web",
+      "en": "Web"
     }
   ],
   "platforms": []
