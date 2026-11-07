@@ -1,0 +1,19 @@
+Relief Generator by FlorindoLAB — composants tiers
+====================================================
+
+Three.js r147 (https://threejs.org)
+  Licence MIT — Copyright © 2010-2022 three.js authors
+  Texte complet : licences/THREE_LICENSE.txt
+
+IBM Plex Sans, IBM Plex Mono (https://github.com/IBM/plex)
+  SIL Open Font License 1.1 — Copyright © 2017 IBM Corp.
+  Texte complet : licences/OFL.txt
+
+Bricolage Grotesque (https://github.com/ateliertriay/bricolage)
+  SIL Open Font License 1.1 — Copyright 2022 The Bricolage Grotesque Project Authors
+  Texte complet : licences/OFL.txt
+
+Algorithmes (implémentations écrites pour ce logiciel) :
+  - Bruit simplex 2D, d'après Stefan Gustavson (domaine public)
+  - Bruit de Perlin « improved », d'après Ken Perlin
+  - Format OpenEXR, d'après la spécification publique d'Industrial Light & Magic

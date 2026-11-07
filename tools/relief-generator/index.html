@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Relief Generator by FlorindoLAB</title>
+<meta name="description" content="Générateur gratuit de height maps et de displacement maps dans le navigateur : bruits, presets, érosion, sculpture, maps dérivées, export PNG 16 bits, RAW et EXR.">
+<meta property="og:title" content="Relief Generator by FlorindoLAB">
+<meta property="og:description" content="Générateur gratuit de height maps et de displacement maps, directement dans le navigateur.">
+<meta property="og:image" content="img/logo-512.png">
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="icon" href="img/logo-512.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<div id="app">
+  <header class="top">
+    <div class="brand"><svg class="mark" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#13202a"/>
+  <path d="M27 49 L44 19 L61 49 Z" fill="#9b7430"/>
+  <path d="M4 49 L23 14 L42 49 Z" fill="#d9a441"/>
+  <path d="M23 14 L29.2 25.4 L25.6 23.6 L22.8 27 L20 23.4 L16.6 25.6 Z" fill="#fbeccb"/>
+  <path d="M44 19 L48.6 27.4 L45.8 26 L43.6 28.4 L41.2 26.6 Z" fill="#e9cf97"/>
+  <path d="M8 54.5 H56" stroke="#d9a441" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>
+  <path d="M15 59 H49" stroke="#d9a441" stroke-width="2.4" stroke-linecap="round" opacity=".3"/>
+</svg><span class="logo">Florindo<b>LAB</b></span><span class="prod">Relief Generator</span><span class="pill">Bêta 1.0</span></div>
+    <div class="seg" id="modeSeg">
+      <button id="modeExpress" data-mode="express" aria-pressed="true">Express</button>
+      <button id="modeAdvanced" data-mode="advanced" aria-pressed="false">Avancé</button>
+    </div>
+    <div class="seg" id="langSeg" aria-label="Langue">
+      <button id="langFr" data-lang="fr" aria-pressed="true" lang="fr">FR</button>
+      <button id="langEn" data-lang="en" aria-pressed="false" lang="en">EN</button>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="btnGoExport">Exporter</button>
+      <button class="btn" id="btnNew">Nouveau</button>
+      <button class="btn" id="btnOpen">Ouvrir un projet…</button>
+      <button class="btn" id="btnSave">Enregistrer le projet</button>
+      <button class="btn icon" id="btnUndo" title="Annuler (Ctrl+Z)" aria-label="Annuler">↶</button>
+      <button class="btn icon" id="btnRedo" title="Rétablir (Ctrl+Y)" aria-label="Rétablir">↷</button>
+      <button class="btn" id="btnAbout">À propos</button>
+    </div>
+  </header>
+
+  <aside class="panel left">
+    <section class="sec exp-only">
+      <h2>Relief actuel</h2>
+      <div class="current"><span id="curPreset"></span></div>
+      <button class="btn primary" id="btnVariation">Nouvelle variation</button>
+      <div class="prm sel"><label for="quickEro">Érosion</label><span></span>
+        <select id="quickEro"><option value="">Aucune</option><option value="legere">Légère</option><option value="moyenne">Moyenne</option><option value="forte">Forte</option><option value="ravinee">Ravinée</option><option value="eboulis">Éboulis (thermique)</option></select>
+      </div>
+      <label class="prm chk"><input type="checkbox" id="expSeamless"><span>Raccord sans couture (seamless)</span></label>
+      <p class="hint">La variation tire de nouvelles graines en gardant les réglages.</p>
+    </section>
+    <section class="sec exp-only">
+      <h2><button class="collapse" id="libToggle" type="button" aria-expanded="true" aria-controls="libBody" title="Afficher ou masquer la bibliothèque"><span class="chev" aria-hidden="true">▾</span><span>Bibliothèque</span></button> <small id="presetCount"></small></h2>
+      <div id="libBody" class="libbody">
+        <div class="chips" id="catChips"></div>
+        <div class="presets" id="presetGrid"></div>
+        <h2 id="userGridTitle" hidden>Mes presets</h2>
+        <p class="note warn" id="upWarn2" hidden></p>
+        <div class="presets" id="userGrid"></div>
+      </div>
+    </section>
+    <section class="sec adv-only">
+      <h2>Couches <small id="layerCount"></small></h2>
+      <div class="addrow"><select id="presetSel" aria-label="Charger un preset"></select></div>
+      <div class="layers" id="layerList"></div>
+      <div class="addrow"><select id="addSel" aria-label="Couche à ajouter"></select><button class="btn primary" id="btnAdd">+ Ajouter</button></div>
+      <div class="addrow"><button class="btn" id="btnVariation2">Variation</button><button class="btn danger" id="btnClear">Vider la pile</button></div>
+      <p class="hint">La couche du haut s'applique en dernier. Glissez une couche par sa poignée pour changer l'ordre. Suppr efface la couche sélectionnée. Une image glissée sur la vue devient une couche.</p>
+    </section>
+    <section class="sec adv-only">
+      <h2>Mes presets <small id="upCount"></small></h2>
+      <div class="addrow"><input type="text" id="upName" placeholder="Nom du preset" aria-label="Nom du nouveau preset" style="flex:1;min-width:0"><button class="btn" id="btnUpSave">Enregistrer la pile</button></div>
+      <p class="note warn" id="upWarn" hidden></p>
+      <div class="layers" id="upList"></div>
+      <div class="addrow"><button class="btn" id="btnUpExportAll">Tout exporter</button><button class="btn" id="btnUpImport">Importer…</button></div>
+      <p class="hint">Les presets perso sont gardés dans ce navigateur uniquement. Ils disparaissent si les données du site sont effacées, en navigation privée, ou sur un autre navigateur ou ordinateur. Le fichier exporté (.json) est votre sauvegarde, et sert aussi à les partager.</p>
+    </section>
+    <section class="sec">
+      <h2>Réglages globaux</h2>
+      <div id="globalProps" class="group" style="border:0;padding:0"></div>
+    </section>
+  </aside>
+
+  <main class="view">
+    <div class="viewbar">
+      <div class="seg" id="tabSeg">
+        <button id="tab3d" data-tab="3d" aria-pressed="true">3D</button>
+        <button id="tab2d" data-tab="2d" aria-pressed="false">2D</button>
+      </div>
+      <label class="opt">Map <select id="mapSel"></select></label>
+      <label class="opt v3">Hauteur <input type="range" id="vscale" min="0" max="1" step="0.01" value="0.25"></label>
+      <label class="opt v3">Lumière <input type="range" id="lightAz" min="0" max="360" step="1" value="135"></label>
+      <label class="opt v3"><input type="checkbox" id="wire"> Maillage</label>
+      <label class="opt v2"><input type="checkbox" id="grid"> Grille</label>
+      <label class="opt v2"><input type="checkbox" id="tile"> Répéter 3×3</label>
+      <label class="opt v2 adv-only"><input type="checkbox" id="solo"> Couche seule</label>
+      <label class="opt">Couleur <select id="colorMode">
+        <option value="alt">Altitude</option><option value="gray">Niveaux de gris</option><option value="shade">Relief ombré</option><option value="clay">Argile</option>
+      </select></label>
+      <button class="btn" id="btnCompare" type="button" aria-pressed="false" title="Maintenir pour voir l'état précédent">Avant / après</button>
+      <span class="spacer"></span>
+      <label class="opt">Aperçu <select id="previewRes"><option value="128">128</option><option value="256" selected>256</option><option value="512">512</option></select></label>
+    </div>
+    <div class="stage" id="stage">
+      <div id="view3d"></div>
+      <canvas id="view2d" hidden></canvas>
+      <div id="busy"></div>
+      <div class="msg empty" id="emptyMsg" hidden></div>
+      <div class="hud" id="sculptHud" hidden></div>
+      <div class="drop" id="dropHint" hidden>Déposez l'image pour l'ajouter comme couche</div>
+    </div>
+    <div class="statusbar" id="status"><span>Initialisation…</span></div>
+  </main>
+
+  <aside class="panel right">
+    <section class="sec">
+      <h2 id="propsTitle">Paramètres</h2>
+      <div id="layerProps" style="display:grid;gap:10px"></div>
+    </section>
+    <section class="sec" id="exportSec">
+      <h2>Export</h2>
+      <label class="prm sel"><span style="color:var(--muted);font-size:12px">Profil</span>
+        <select id="profileSel">
+          <option value="custom">Personnalisé</option>
+          <option value="blender">Blender (Displace)</option>
+          <option value="unreal">Unreal Engine (Landscape)</option>
+          <option value="unity">Unity (Terrain)</option>
+          <option value="godot">Godot (Terrain3D / HTerrain)</option>
+        </select>
+      </label>
+      <div class="formats" id="formats">
+        <label class="fmt"><input type="radio" name="fmt" value="png16" checked><b>PNG 16 bits</b><small>65 536 niveaux, recommandé pour le displacement.</small></label>
+        <label class="fmt"><input type="radio" name="fmt" value="png8"><b>PNG 8 bits</b><small>256 niveaux. Léger, mais crée des marches sur les pentes douces.</small></label>
+        <label class="fmt"><input type="radio" name="fmt" value="raw16"><b>RAW 16 bits</b><small>Entiers non signés, little-endian, sans en-tête (.raw / .r16).</small></label>
+        <label class="fmt"><input type="radio" name="fmt" value="exr32"><b>EXR 32 bits</b><small>Flottants 32 bits sans perte (compression ZIP), pour les workflows VFX.</small></label>
+      </div>
+      <label class="prm sel"><span style="color:var(--muted);font-size:12px">Résolution</span>
+        <select id="resSel">
+          <option value="256">256 × 256</option><option value="512">512 × 512</option><option value="1024">1024 × 1024</option>
+          <option value="2048" selected>2048 × 2048</option><option value="4096">4096 × 4096</option><option value="8192">8192 × 8192</option>
+          <option value="1009">1009 × 1009 (Unreal)</option><option value="2017">2017 × 2017 (Unreal)</option>
+          <option value="1025">1025 × 1025 (Unity)</option><option value="2049">2049 × 2049 (Unity)</option>
+          <option value="custom">Dimensions personnalisées…</option>
+        </select>
+      </label>
+      <div class="dims" id="customDims" hidden>
+        <input type="number" id="expW" min="16" max="8192" value="2048" aria-label="Largeur"> × <input type="number" id="expH" min="16" max="8192" value="1024" aria-label="Hauteur"> px
+      </div>
+      <p class="note" id="exportNote"></p>
+      <div class="progress" id="expProg" hidden><i></i></div>
+      <button class="btn primary" id="btnExport">Exporter la height map</button>
+      <div class="group">
+        <div class="group-title">Pack de maps (.zip)</div>
+        <div class="packlist" id="packList"></div>
+        <button class="btn" id="btnPack">Exporter le pack</button>
+        <p class="hint">Mêmes dimensions que ci-dessus. Le fichier de projet est ajouté au pack pour pouvoir refaire le résultat.</p>
+      </div>
+      <details class="about">
+        <summary>Notes du prototype</summary>
+        <ul>
+          <li>Tous les calculs se font dans votre navigateur, dans un thread séparé.</li>
+          <li>L'aperçu et l'export utilisent les mêmes coordonnées : seule la finesse change.</li>
+          <li>Les images importées sont lues en 8 bits par le navigateur, même un PNG 16 bits.</li>
+          <li>Seules les couches modifiées (et celles au-dessus) sont recalculées pendant les réglages.</li>
+          <li>Pas encore inclus : sortie en plusieurs tuiles.</li>
+        </ul>
+      </details>
+    </section>
+    <section class="sec">
+      <h2>Maps dérivées <small id="mapName"></small></h2>
+      <div id="mapProps" style="display:grid;gap:10px"></div>
+    </section>
+  </aside>
+</div>
+<dialog id="aboutDlg" aria-labelledby="aboutTitle">
+  <div class="dlg">
+    <div class="dlg-head"><svg class="mark" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#13202a"/>
+  <path d="M27 49 L44 19 L61 49 Z" fill="#9b7430"/>
+  <path d="M4 49 L23 14 L42 49 Z" fill="#d9a441"/>
+  <path d="M23 14 L29.2 25.4 L25.6 23.6 L22.8 27 L20 23.4 L16.6 25.6 Z" fill="#fbeccb"/>
+  <path d="M44 19 L48.6 27.4 L45.8 26 L43.6 28.4 L41.2 26.6 Z" fill="#e9cf97"/>
+  <path d="M8 54.5 H56" stroke="#d9a441" stroke-width="2.4" stroke-linecap="round" opacity=".55"/>
+  <path d="M15 59 H49" stroke="#d9a441" stroke-width="2.4" stroke-linecap="round" opacity=".3"/>
+</svg><div class="dlg-title"><h2 id="aboutTitle">Relief Generator</h2><p class="hint">by FlorindoLAB · <span>version</span> <span id="appVersion"></span></p></div><button class="btn icon" id="aboutClose" type="button" aria-label="Fermer">✕</button></div>
+    <p>Générateur gratuit de height maps et de displacement maps. Tous les calculs se font dans votre navigateur : aucune image ni aucun projet n'est envoyé sur un serveur.</p>
+    <h3>Version bêta</h3>
+    <p>Cette version est en test. Si quelque chose ne fonctionne pas, copiez les informations techniques et collez-les dans votre message : elles aident à reproduire le problème.</p>
+    <div class="rowbtns"><button class="btn" id="btnCopyDiag" type="button">Copier les informations techniques</button><a class="btn primary" id="lnkContact" href="https://florindolab.com/contact/" target="_blank" rel="noopener">Signaler un problème</a></div>
+    <pre id="diagText" hidden></pre>
+    <h3>Licence</h3>
+    <p>Logiciel gratuit (freeware) © 2026 FlorindoLAB. <a id="lnkLicence" href="https://florindolab.com/licence/" target="_blank" rel="noopener">Conditions d'utilisation</a></p>
+    <h3>Composants tiers</h3>
+    <ul>
+      <li>Three.js r147 : licence MIT, © 2010-2022 three.js authors.</li>
+      <li>Polices IBM Plex Sans et IBM Plex Mono : SIL Open Font License 1.1, © IBM Corp.</li>
+      <li>Police Bricolage Grotesque : SIL Open Font License 1.1, © The Bricolage Grotesque Project Authors.</li>
+      <li>Bruit simplex d'après Stefan Gustavson (domaine public), bruit de Perlin d'après Ken Perlin, format OpenEXR d'après la spécification publique d'ILM.</li>
+    </ul>
+  </div>
+</dialog>
+<input type="file" id="fileImg" accept="image/*" hidden>
+<input type="file" id="fileProj" accept=".json,application/json" hidden>
+<input type="file" id="filePreset" accept=".json,application/json" hidden>
+
+
+<script src="js/vendor/three.min.js"></script>
+<script>window.THREE || document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"><\/script>')</script>
+<script src="js/vendor/OrbitControls.js"></script>
+<script>(window.THREE && THREE.OrbitControls) || document.write('<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"><\/script>')</script>
+<script src="js/engine.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
