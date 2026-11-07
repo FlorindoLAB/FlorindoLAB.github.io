@@ -3,6 +3,16 @@
 var app = document.getElementById("app"), sel = document.getElementById("lang");
 var S, T, L = {}, LG = [], lang = "fr", cat = "all", pr = null;
 var FIXED = document.documentElement.getAttribute("data-fixed-lang") || "", PAGE = document.documentElement.getAttribute("data-route") || "";
+var APP = { contact: { fr: "contact", en: "contact" }, support: { fr: "soutenir", en: "support" }, license: { fr: "licence", en: "license" } };
+function aurl(k) { return FIXED ? (lang === "en" ? "/en/" : "/") + APP[k][lang === "en" ? "en" : "fr"] + "/" : "#/" + k; }
+function cur() { return (location.hash.replace(/^#\/?/, "") || PAGE.replace(/^\//, "")).split(/[\/?]/)[0]; }
+function fixLink(u) {
+  var m = /^#\/(contact|support|license)(\?.*)?$/.exec(u);
+  if (m) return aurl(m[1]) + (m[2] || "");
+  var g = /^#\/legal\/([\w-]+)$/.exec(u);
+  if (g && FIXED) { var p = LG.filter(function (x) { return x.id === g[1]; })[0]; if (p) return pageUrl(p); }
+  return u;
+}
 function hb() { return FIXED ? (FIXED === "en" ? "/en/" : "/") : ""; }
 function turl(id) { return FIXED ? (lang === "en" ? "/en/tools/" : "/outils/") + id + "/" : "#/tool/" + id; }
 function abs(u) { return /^(https?:)?\/\//.test(u) || u.charAt(0) === "/" ? u : "/" + u; }
@@ -43,6 +53,8 @@ var X = {
   stats_p7: ["7 jours", "7 days"], stats_p30: ["30 jours", "30 days"], stats_p90: ["90 jours", "90 days"], stats_pall: ["Tout", "All"],
   stats_ptotal: ["Sur la période", "Over the period"], stats_best: ["Meilleur jour", "Best day"], stats_avg: ["Moyenne par jour", "Average per day"],
   stats_totshort: ["au total", "in total"], stats_since: ["Relevés depuis le", "Tracked since"],
+  stats_pw: ["Mot de passe", "Password"], stats_unlock: ["Déverrouiller", "Unlock"], stats_badpw: ["Mot de passe incorrect.", "Wrong password."],
+  stats_nofile: ["Les statistiques ne sont pas encore disponibles : le premier relevé n'a pas encore eu lieu.", "Statistics are not available yet: the first snapshot has not been taken."],
   car_pause: ["Mettre en pause", "Pause"], car_play: ["Reprendre", "Play"], shots: ["Captures d'écran", "Screenshots"]
 };
 Object.keys(X).forEach(function (k) { DEF[k] = { fr: X[k][0], en: X[k][1] }; });
@@ -66,7 +78,7 @@ function row(x) {
 }
 function home() {
   var list = T.tools.filter(function (x) { return cat === "all" || (x.categories || []).some(function (v) { return catKey(v) === cat; }); });
-  app.innerHTML = '<div class="hero"><div><h1>' + esc(t("hero_title")) + "</h1><p>" + esc(t("hero_text")) + '</p><a class="btn main" href="#/tools">' + esc(t("see_tools")) + '</a><a class="btn" href="#/support">' + esc(t("support_project")) + '</a></div>' + heroVisual() + "</div>" + feat() +
+  app.innerHTML = '<div class="hero"><div><h1>' + esc(t("hero_title")) + "</h1><p>" + esc(t("hero_text")) + '</p><a class="btn main" href="#/tools">' + esc(t("see_tools")) + '</a><a class="btn" href="' + aurl("support") + '">' + esc(t("support_project")) + '</a></div>' + heroVisual() + "</div>" + feat() +
     '<section class="sec" id="tools-sec"><h2>' + esc(t("tools")) + '</h2><p class="lead">' + esc(t("tools_lead")) + '</p><div class="chips" role="group">' + chip("all", t("all")) + catList().map(function (c) { return chip(c.k, c.label); }).join("") + "</div>" +
     (list.length ? list.map(row).join("") : '<p class="empty">' + esc(t("empty")) + "</p>") + "</section>";
   app.querySelectorAll(".chip").forEach(function (b) { b.onclick = function () { cat = b.getAttribute("data-f"); home(); }; });
@@ -99,8 +111,8 @@ function tool(id) {
   app.innerHTML = '<a class="back" href="' + hb() + '#/tools">' + esc(t("back")) + '</a><div class="th"><h1 class="tt">' + esc(loc(x.name)) + "</h1>" + tags(x) + '<p class="lead">' + esc(loc(x.summary)) + '</p></div><div class="tg"><div class="tmain">' + body(x) + '</div><aside class="tside">' +
     (x.webUrl ? '<p><a class="btn main" href="' + esc(abs(x.webUrl)) + '">' + esc(t("open_web")) + "</a></p>" : "") +
     (x.releasePrefix ? '<div class="dl" id="dl"><p>' + esc(t("loading")) + "</p></div>" : "") + notice(x) +
-    '<p class="lic"><a href="#/license">' + esc(t("license_link")) + "</a></p>" +
-    (S.contactKey ? '<p class="lic"><a href="#/contact?tool=' + esc(x.id) + '">' + esc(t("report_bug")) + "</a></p>" : "") + "</aside></div>";
+    '<p class="lic"><a href="' + aurl("license") + '">' + esc(t("license_link")) + "</a></p>" +
+    (S.contactKey ? '<p class="lic"><a href="' + aurl("contact") + "?tool=" + esc(x.id) + '">' + esc(t("report_bug")) + "</a></p>" : "") + "</aside></div>";
   var box = document.getElementById("dl");
   if (box) releases().then(function (all) { if (box.isConnected) fill(box, x, all); }).catch(function () { if (box.isConnected) box.innerHTML = '<p class="empty">' + esc(t("load_error")) + "</p>"; });
 }
@@ -117,7 +129,7 @@ function vid(u) {
   m = /vimeo\.com\/(\d+)/.exec(u || "");
   return m ? "https://player.vimeo.com/video/" + m[1] : "";
 }
-function rich(q) { return esc(q).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/`([^`\n]+)`/g, "<code>$1</code>").replace(/\b[0-9A-Fa-f]{64}\b/g, '<code class="hash">$&</code>').replace(/!\[([^\]]*)\]\((\/[^)\s]+|https?:\/\/[^)\s]+)\)/g, '<img class="mi" src="$2" alt="$1" loading="lazy">').replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|#\/[^)\s]*)\)/g, function (m, a, u) { return '<a href="' + u + '"' + (u.charAt(0) === "#" ? "" : ' target="_blank" rel="noopener"') + ">" + a + "</a>"; }).replace(/\n/g, "<br>"); }
+function rich(q) { return esc(q).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/`([^`\n]+)`/g, "<code>$1</code>").replace(/\b[0-9A-Fa-f]{64}\b/g, '<code class="hash">$&</code>').replace(/!\[([^\]]*)\]\((\/[^)\s]+|https?:\/\/[^)\s]+)\)/g, '<img class="mi" src="$2" alt="$1" loading="lazy">').replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|#\/[^)\s]*)\)/g, function (m, a, u) { u = fixLink(u); return '<a href="' + u + '"' + (/^https?:/.test(u) ? ' target="_blank" rel="noopener"' : "") + ">" + a + "</a>"; }).replace(/\n/g, "<br>"); }
 function blk(q) {
   q = q.trim();
   var hh = /^(#{2,3}) /.exec(q);
@@ -238,13 +250,35 @@ var MINDL = 100;
 function nf(n) { return new Intl.NumberFormat(lang).format(n); }
 function dls(r) { return r.assets.reduce(function (n, a) { return n + (a.download_count || 0); }, 0); }
 function cnt(rs) { var n = rs.reduce(function (s, r) { return s + dls(r); }, 0); return n >= MINDL ? '<p class="ver">' + esc(nf(n) + " " + t("dl_count")) + "</p>" : ""; }
-function stats() {
-  app.innerHTML = '<a class="back" href="' + hb() + '#/tools">' + esc(t("back")) + '</a><section class="sec"><h1 class="tt">' + esc(t("stats_title")) + '</h1><p class="lead">' + esc(t("stats_lead")) + '</p><div id="st"><p>' + esc(t("loading")) + "</p></div></section>";
-  var box = document.getElementById("st");
+var STD = null;
+function b64d(s) { return Uint8Array.from(atob(s), function (c) { return c.charCodeAt(0); }); }
+function decryptStats(o, pw) {
+  return crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]).then(function (k) {
+    return crypto.subtle.deriveKey({ name: "PBKDF2", salt: b64d(o.salt), iterations: o.iter, hash: "SHA-256" }, k, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  }).then(function (key) { return crypto.subtle.decrypt({ name: "AES-GCM", iv: b64d(o.iv) }, key, b64d(o.data)); }).then(function (b) { return JSON.parse(new TextDecoder().decode(b)); });
+}
+function showStats(box) {
+  box.innerHTML = "<p>" + esc(t("loading")) + "</p>";
   releases().then(function (all) { if (box.isConnected) { box.innerHTML = statsHtml(all); evo(); } }).catch(function () { if (box.isConnected) box.innerHTML = '<p class="empty">' + esc(t("load_error")) + "</p>"; });
 }
-var STH = null;
-function shist() { return STH || (STH = get("/data/stats-history.json").catch(function () { return null; })); }
+function openStats(box, pw) {
+  return get("/data/stats-history.enc.json").then(function (o) { return decryptStats(o, pw); }).then(function (h) { STD = h; try { sessionStorage.setItem("sk", pw); } catch (e) {} showStats(box); });
+}
+function stats() {
+  app.innerHTML = '<a class="back" href="' + hb() + '#/tools">' + esc(t("back")) + '</a><section class="sec"><h1 class="tt">' + esc(t("stats_title")) + '</h1><div id="st"></div></section>';
+  var box = document.getElementById("st"), saved = null;
+  try { saved = sessionStorage.getItem("sk"); } catch (e) {}
+  function lock(msg) {
+    box.innerHTML = '<form class="cf lk"><label>' + esc(t("stats_pw")) + '<input type="password" name="pw" autocomplete="current-password" required></label><button class="btn main" type="submit">' + esc(t("stats_unlock")) + '</button><p class="cm err" role="alert">' + esc(msg || "") + "</p></form>";
+    var f = box.querySelector("form");
+    f.onsubmit = function (e) {
+      e.preventDefault(); f.querySelector("button").disabled = true;
+      openStats(box, f.elements.pw.value).catch(function (er) { try { sessionStorage.removeItem("sk"); } catch (x) {} lock(er && er.message === "404" ? t("stats_nofile") : t("stats_badpw")); });
+    };
+  }
+  if (STD) showStats(box); else if (saved) openStats(box, saved).catch(function (er) { lock(er && er.message === "404" ? t("stats_nofile") : ""); }); else lock();
+}
+function shist() { return Promise.resolve(STD); }
 function nice(m) { var p = Math.pow(10, Math.floor(Math.log(m) / Math.LN10)), f = m / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
 function sdate(d) { return new Date(d + "T00:00:00Z").toLocaleDateString(lang, { day: "numeric", month: "short", timeZone: "UTC" }); }
 var CW = 640, CH = 260, CL = 46, CR = 12, CT = 14, CB = 30;
@@ -394,7 +428,7 @@ function dlbtn(x, a, k) {
 }
 function license() {
   get("/data/license.json").then(function (d) {
-    if (location.hash.replace(/^#\/?/, "").split("/")[0] !== "license") return;
+    if (cur() !== "license") return;
     var c = d[lang] || d.en || d.fr;
     app.innerHTML = '<a class="back" href="' + hb() + '#/tools">' + esc(t("back")) + '</a><section class="sec law"><h1 class="tt">' + esc(t("license_title")) + '</h1><p class="lead">' + esc(t("license_lead")) + "</p>" +
       c.map(function (s) {
@@ -406,7 +440,7 @@ function support() {
   app.innerHTML = '<section class="sec support"><div><h1 class="tt">' + esc(t("support_title")) + "</h1><p>" + esc(t("support_text")) + '</p></div><a class="btn main coffee" href="' + esc(S.donateUrl) + '" rel="noopener">' + esc(t("coffee")) + "</a></section>";
 }
 function route() {
-  var raw = location.hash.replace(/^#\/?/, "") || PAGE.replace(/^\//, ""), qi = raw.indexOf("?"), q = qi < 0 ? "" : raw.slice(qi + 1), h = (qi < 0 ? raw : raw.slice(0, qi)).split("/");
+  var raw = location.hash.replace(/^#\/?/, "") || PAGE.replace(/^\//, ""), qi = raw.indexOf("?"), q = qi < 0 ? (location.search || "").replace(/^\?/, "") : raw.slice(qi + 1), h = (qi < 0 ? raw : raw.slice(0, qi)).split("/");
   if (h[0] === "tool" && h[1]) tool(decodeURIComponent(h[1])); else if (h[0] === "support") support(); else if (h[0] === "license") license();
   else if (h[0] === "stats") stats();
   else if (h[0] === "legal" && h[1]) legal(decodeURIComponent(h[1]));
@@ -419,6 +453,8 @@ function stat() {
   document.querySelectorAll("[data-i18n]").forEach(function (e) { e.textContent = t(e.getAttribute("data-i18n")); });
   if (!FIXED) document.title = "FlorindoLAB – " + t("tagline");
   if (FIXED) { var br = document.querySelector(".brand"); if (br) br.setAttribute("href", hb()); var nt = document.querySelector('nav a[data-i18n="nav_tools"]'); if (nt) nt.setAttribute("href", hb() + "#/tools"); }
+  var ns = document.querySelector('nav a[data-i18n="nav_support"]'), fl = document.querySelector('footer a[data-i18n="nav_license"]'), ct = document.getElementById("ct");
+  if (ns) ns.setAttribute("href", aurl("support")); if (fl) fl.setAttribute("href", aurl("license")); if (ct) ct.setAttribute("href", aurl("contact"));
   var lg = document.getElementById("lg");
   if (lg) lg.innerHTML = LG.map(function (p) { return '<a href="' + esc(pageUrl(p)) + '">' + esc(loc(p.title)) + "</a>"; }).join(" ");
   banner();

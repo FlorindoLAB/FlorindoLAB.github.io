@@ -21,6 +21,18 @@ function loadTools() {
   }).sort((a, b) => (a.order ?? 100) - (b.order ?? 100) || String(a.id).localeCompare(String(b.id)));
   return { categories: tax.categories || [], platforms: tax.platforms || [], tools };
 }
+const DEFSLUG = { mentions: { fr: "mentions-legales", en: "legal-notice" }, privacy: { fr: "confidentialite", en: "privacy" }, cookies: { fr: "cookies", en: "cookies" }, terms: { fr: "conditions", en: "terms" } };
+const APPP = { contact: { fr: "contact", en: "contact", route: "contact" }, support: { fr: "soutenir", en: "support", route: "support" }, license: { fr: "licence", en: "license", route: "license" } };
+const appUrl = (k, lang) => (lang === "en" ? "/en/" : "/") + APPP[k][lang === "en" ? "en" : "fr"] + "/";
+let CURLANG = "fr";
+function pageUrl(p, lang) { const s = p.slug && (p.slug[lang] || p.slug.fr); return s ? (lang === "en" ? "/en/" : "/") + s + "/" : null; }
+function fixLink(u) {
+  const m = /^#\/(contact|support|license)(\?.*)?$/.exec(u);
+  if (m) return appUrl(m[1], CURLANG) + (m[2] || "");
+  const g = /^#\/legal\/([\w-]+)$/.exec(u);
+  if (g) { const p = LEGAL.pages.find((x) => x.id === g[1]); const l = p && pageUrl(p, CURLANG); if (l) return l; }
+  return u;
+}
 function loadLegal() {
   const base = fs.existsSync(path.join(ROOT, "data", "legal.json")) ? json("data/legal.json") : { pages: [] };
   const pages = [...(base.pages || [])];
@@ -30,6 +42,7 @@ function loadLegal() {
     o.id = o.id || f.replace(/\.json$/, "");
     if (!pages.some((p) => p.id === o.id)) pages.push(o);
   }
+  for (const p of pages) if (!p.slug && DEFSLUG[p.id]) p.slug = DEFSLUG[p.id];
   return { pages };
 }
 const FOLDER = fs.existsSync(path.join(ROOT, "data", "tools"));
@@ -44,6 +57,9 @@ const FB = {
   nav_contact: { fr: "Contact", en: "Contact" },
   dlgh: { fr: "Télécharger sur GitHub", en: "Download on GitHub" },
   suffix: { fr: "logiciel gratuit", en: "free software" },
+  contact_title: { fr: "Contact", en: "Contact" },
+  contact_lead: { fr: "Un bug, une question, une idée ? Écrivez-moi : plus vous me donnez de détails, plus il me sera facile de vous aider.", en: "A bug, a question, an idea? Write to me: the more details you give, the easier it is for me to help." },
+  support_page: { fr: "Soutenir FlorindoLAB", en: "Support FlorindoLAB" },
   shots: { fr: "Captures d'écran", en: "Screenshots" },
 };
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -61,7 +77,7 @@ function rich(q) {
     .replace(/`([^`\n]+)`/g, "<code>$1</code>")
     .replace(/\b[0-9A-Fa-f]{64}\b/g, '<code class="hash">$&</code>')
     .replace(/!\[([^\]]*)\]\((\/[^)\s]+|https?:\/\/[^)\s]+)\)/g, '<img class="mi" src="$2" alt="$1" loading="lazy">')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|#\/[^)\s]*)\)/g, (m, a, u) => `<a href="${u}"${u[0] === "#" ? "" : ' target="_blank" rel="noopener"'}>${a}</a>`)
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|#\/[^)\s]*)\)/g, (m, a, u0) => { const u = fixLink(u0); return `<a href="${u}"${/^https?:/.test(u) ? ' target="_blank" rel="noopener"' : ""}>${a}</a>`; })
     .replace(/\n/g, "<br>");
 }
 function blk(q) {
@@ -112,7 +128,7 @@ function homeMain(lang) {
 function toolMain(x, lang) {
   const web = x.webUrl ? `<p><a class="btn main" href="${esc(abs(x.webUrl))}">${esc(tx(lang, "open_web"))}</a></p>` : "";
   const dl = x.releasePrefix ? `<p><a class="btn main" href="https://github.com/${esc(S.repo)}/releases">${esc(tx(lang, "dlgh"))}</a></p>` : "";
-  return `<a class="back" href="${homeU(lang)}#/tools">${esc(tx(lang, "back"))}</a><div class="th"><h1 class="tt">${esc(loc(x.name, lang))}</h1>${tags(x, lang)}<p class="lead">${esc(loc(x.summary, lang))}</p></div><div class="tg"><div class="tmain">${bodyHtml(loc(x.description, lang))}${shotsHtml(x, lang)}</div><aside class="tside">${web}${dl}${fileInfo(x, lang)}<p class="lic"><a href="#/license">${esc(tx(lang, "license_link"))}</a></p></aside></div>`;
+  return `<a class="back" href="${homeU(lang)}#/tools">${esc(tx(lang, "back"))}</a><div class="th"><h1 class="tt">${esc(loc(x.name, lang))}</h1>${tags(x, lang)}<p class="lead">${esc(loc(x.summary, lang))}</p></div><div class="tg"><div class="tmain">${bodyHtml(loc(x.description, lang))}${shotsHtml(x, lang)}</div><aside class="tside">${web}${dl}${fileInfo(x, lang)}<p class="lic"><a href="${appUrl("license", lang)}">${esc(tx(lang, "license_link"))}</a></p></aside></div>`;
 }
 
 function render(o) {
@@ -137,6 +153,8 @@ function render(o) {
   h = sub(h, /<title>[^<]*<\/title>/, `<title>${esc(o.title)}</title>`);
   h = sub(h, /<meta name="description" content="[^"]*">/, `<meta name="description" content="${esc(o.desc)}">\n${head}`);
   h = sub(h, /<main id="app" class="wrap">[\s\S]*?<\/main>/, `<main id="app" class="wrap">${o.main}</main>`);
+  for (const k of ["support", "license", "contact"]) h = h.replace(`href="#/${k}"`, `href="${appUrl(k, o.lang)}"`);
+  h = h.replace('href="#/tools"', `href="${homeU(o.lang)}#/tools"`).replace('class="brand" href="#/"', `class="brand" href="${homeU(o.lang)}"`);
   h = h.replace(/(data-i18n="([a-z_]+)"[^>]*>)([^<]*)</g, (m, a, k, t) => a + esc(tx(o.lang, k) || t) + "<");
   return h;
 }
@@ -161,11 +179,13 @@ fs.rmSync(path.join(OUT, "data", "taxonomy.json"), { force: true });
 write("data/tools.json", JSON.stringify(T));
 const LEGAL = loadLegal();
 fs.rmSync(path.join(OUT, "data", "pages"), { recursive: true, force: true });
+fs.rmSync(path.join(OUT, "data", "stats-history.json"), { force: true });
 write("data/legal.json", JSON.stringify(LEGAL));
 const urls = [];
 const OSNAME = { windows: "Windows", android: "Android", web: "Web browser", dctl: "DaVinci Resolve" };
 const MEDIA = ["video", "vfx", "photo", "dessin", "son"];
 for (const lang of ["fr", "en"]) {
+  CURLANG = lang;
   const sep = lang === "en" ? ": " : " : ";
   write(lang === "en" ? "en/index.html" : "index.html", render({
     lang, route: "home", path: homeU(lang), fr: homeU("fr"), en: homeU("en"),
@@ -191,12 +211,12 @@ for (const lang of ["fr", "en"]) {
 }
 
 // ---- pages d'information avec adresse propre (ex. /securite/) ----
-const pageUrl = (p, lang) => { const s = p.slug && (p.slug[lang] || p.slug.fr); return s ? (lang === "en" ? "/en/" : "/") + s + "/" : null; };
 const firstPara = (s) => { const b = String(s || "").replace(/\r/g, "").split(/\n\s*\n/).map((x) => x.trim()).find((x) => x && !/^#{2,3} /.test(x) && !/^(- |\d+[.)] )/.test(x)) || ""; const t = b.replace(/^> ?/gm, "").replace(/\*\*/g, "").replace(/\[([^\]]+)\]\([^)]*\)/g, "$1").replace(/`/g, "").replace(/\s+/g, " ").trim(); return t.length > 155 ? t.slice(0, 154).trimEnd() + "…" : t; };
 const pageEntries = [];
 for (const p of LEGAL.pages) {
   if (!p.slug) continue;
   for (const lang of ["fr", "en"]) {
+    CURLANG = lang;
     const url = pageUrl(p, lang), title = loc(p.title, lang), body = loc(p.body, lang);
     write(url.slice(1) + "index.html", render({
       lang, route: "legal/" + p.id, path: url, fr: pageUrl(p, "fr"), en: pageUrl(p, "en"),
@@ -207,6 +227,27 @@ for (const p of LEGAL.pages) {
   }
   pageEntries.push([pageUrl(p, "fr"), pageUrl(p, "en")]);
 }
+// ---- pages de l'application avec adresse propre : contact, soutien, licence ----
+const APP_ENTRIES = [];
+for (const lang of ["fr", "en"]) {
+  CURLANG = lang;
+  const licData = fs.existsSync(path.join(ROOT, "data", "license.json")) ? json("data/license.json") : {};
+  const licSecs = (licData[lang] || []).map((s) => `<h3>${esc(s.n + ". " + s.h)}</h3>` + s.p.map((q) => `<p class="${/^[a-d]\) /.test(q) ? "it" : "lp"}">${esc(q)}</p>`).join("")).join("");
+  const back = `<a class="back" href="${homeU(lang)}#/tools">${esc(tx(lang, "back"))}</a>`;
+  const defs = {
+    contact: { title: tx(lang, "contact_title"), desc: tx(lang, "contact_lead"), main: `${back}<section class="sec"><h1 class="tt">${esc(tx(lang, "contact_title"))}</h1><p class="lead">${esc(tx(lang, "contact_lead"))}</p></section>` },
+    support: { title: tx(lang, "support_page"), desc: tx(lang, "support_text"), main: `${back}<section class="sec support"><div><h1 class="tt">${esc(tx(lang, "support_title"))}</h1><p>${esc(tx(lang, "support_text"))}</p></div><a class="btn main coffee" href="${esc(S.donateUrl || "#")}" rel="noopener">${esc(tx(lang, "coffee"))}</a></section>` },
+    license: { title: tx(lang, "license_title"), desc: tx(lang, "license_lead"), main: `${back}<section class="sec law"><h1 class="tt">${esc(tx(lang, "license_title"))}</h1><p class="lead">${esc(tx(lang, "license_lead"))}</p>${licSecs}</section>` },
+  };
+  for (const [k, d] of Object.entries(defs)) {
+    write(appUrl(k, lang).slice(1) + "index.html", render({
+      lang, route: APPP[k].route, path: appUrl(k, lang), fr: appUrl(k, "fr"), en: appUrl(k, "en"),
+      title: d.title + " | FlorindoLAB", desc: d.desc, main: d.main,
+      ld: { "@context": "https://schema.org", "@type": "WebPage", name: d.title, url: ORIGIN + appUrl(k, lang), inLanguage: lang },
+    }));
+  }
+}
+for (const k of Object.keys(APPP)) APP_ENTRIES.push([appUrl(k, "fr"), appUrl(k, "en")]);
 // ---- redirections des anciens identifiants ----
 for (const x of T.tools) for (const old of x.anciens_ids || []) for (const lang of ["fr", "en"]) {
   if (old === x.id) continue;
@@ -225,7 +266,7 @@ write("build-info.txt", [
   "",
 ].join("\n"));
 // ---- sitemap et robots ----
-const entries = [[homeU("fr"), homeU("en")], ...T.tools.map((x) => [turl(x.id, "fr"), turl(x.id, "en")]), ...pageEntries];
+const entries = [[homeU("fr"), homeU("en")], ...T.tools.map((x) => [turl(x.id, "fr"), turl(x.id, "en")]), ...pageEntries, ...APP_ENTRIES];
 const alt = (f, e) => `<xhtml:link rel="alternate" hreflang="fr" href="${ORIGIN + f}"/><xhtml:link rel="alternate" hreflang="en" href="${ORIGIN + e}"/><xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN + f}"/>`;
 const sm = entries.flatMap(([f, e]) => [f, e].map((u) => `<url><loc>${ORIGIN + u}</loc>${alt(f, e)}</url>`)).join("\n");
 write("sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${sm}\n</urlset>\n`);
