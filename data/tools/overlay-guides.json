@@ -37,7 +37,7 @@
   "accueil": {
     "hero": true,
     "featured": false,
-    "isNew": true,
+    "isNew": false,
     "order": 40
   }
 }
