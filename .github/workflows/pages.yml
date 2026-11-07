@@ -26,17 +26,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Relever les compteurs de téléchargements
+      - name: Relever les compteurs de téléchargements (chiffrés)
         if: github.event_name != 'push'
+        continue-on-error: true
         run: node scripts/snapshot.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          STATS_KEY: ${{ secrets.STATS_KEY }}
       - name: Enregistrer l'historique
         if: github.event_name != 'push'
+        continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/stats-history.json
+          git add -A data
           if ! git diff --cached --quiet; then
             git commit -m "Historique des téléchargements"
             git pull --rebase origin main
