@@ -1,0 +1,5 @@
+Déposez ici three.min.js (Three.js r128) pour héberger la vue 3D sur le site.
+Tant qu'il est absent, l'outil le charge depuis cdnjs.cloudflare.com.
+https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js
+jszip.min.js (3.10.1, licence MIT) est déjà inclus.
+Le lecteur EXR (fflate 0.6.10 + EXRLoader r128) est chargé à la demande depuis cdn.jsdelivr.net.
