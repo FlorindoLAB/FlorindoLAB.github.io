@@ -210,3 +210,18 @@ blockquote.callout{max-width:70ch;margin:0 0 22px;padding:14px 18px;background:v
 .law code:not(.hash):not(.hx),.tmain code:not(.hash):not(.hx){background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font:13.5px ui-monospace,SFMono-Regular,Consolas,Menlo,monospace}
 .mi{display:block;max-width:100%;height:auto;margin:10px 0;border:1px solid var(--line);border-radius:8px}
 @media (max-width:640px){.bn{font-size:13.5px;text-align:left;align-items:flex-start}}
+
+/* ---- graphiques de la page de statistiques ---- */
+.evo{margin:6px 0 32px}.evo h2{font-size:24px;margin:0 0 12px}
+.evc{display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center;margin-bottom:14px}
+.evc select{font:inherit;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+.evc .chip{padding:5px 14px}
+.kpi{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 12px}.kpi div{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px}
+.kpi b{display:block;font:800 22px "Bricolage Grotesque",sans-serif}.kpi span{color:var(--muted);font-size:13.5px}
+.chartbox{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 8px 4px;touch-action:pan-y}
+.chart{display:block;width:100%;height:auto}
+.chart .gl{stroke:var(--line);stroke-width:1}.chart .ax{fill:var(--muted);font:11px system-ui,sans-serif}
+.chart .bar{fill:var(--accent)}.chart .ln{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linejoin:round}.chart .area{fill:var(--accent);opacity:.16}
+.chart .cur{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+.tip{position:absolute;top:6px;transform:translateX(-50%);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px 9px;font-size:13px;white-space:nowrap;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+.evo .note{color:var(--muted);font-size:13.5px;margin:10px 0 0}

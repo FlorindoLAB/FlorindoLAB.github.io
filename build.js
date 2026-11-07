@@ -142,7 +142,7 @@ function render(o) {
 }
 
 // ---- copie du site ----
-const SKIP = new Set([".git", ".github", "dist", "node_modules", "build.js", "README.md"]);
+const SKIP = new Set([".git", ".github", "dist", "node_modules", "build.js", "README.md", "scripts"]);
 function copyDir(src, dst) {
   fs.mkdirSync(dst, { recursive: true });
   for (const e of fs.readdirSync(src, { withFileTypes: true })) {

@@ -37,6 +37,12 @@ var X = {
   banner: ["Développeur indépendant : mes logiciels ne sont pas encore signés (le certificat est payant), donc Windows et macOS affichent une alerte au premier lancement.", "Independent developer here: my software isn't code-signed yet (the certificate is paid), so Windows and macOS show a warning on first launch."],
   banner_link: ["Pourquoi, et comment faire", "Why, and what to do"],
   alertnote: ["Une alerte au premier lancement ? C'est normal : voici pourquoi et comment faire.", "A warning on first launch? That's normal: here's why and what to do."],
+  stats_evo: ["Évolution des téléchargements", "Download trends"],
+  stats_none_hist: ["L'historique se construit jour après jour : un relevé est enregistré chaque nuit. Revenez demain pour voir la courbe.", "The history builds up day by day: a snapshot is recorded every night. Come back tomorrow to see the chart."],
+  stats_alltools: ["Tous les outils", "All tools"], stats_perday: ["Par jour", "Per day"], stats_cumul: ["Cumul", "Cumulative"],
+  stats_p7: ["7 jours", "7 days"], stats_p30: ["30 jours", "30 days"], stats_p90: ["90 jours", "90 days"], stats_pall: ["Tout", "All"],
+  stats_ptotal: ["Sur la période", "Over the period"], stats_best: ["Meilleur jour", "Best day"], stats_avg: ["Moyenne par jour", "Average per day"],
+  stats_totshort: ["au total", "in total"], stats_since: ["Relevés depuis le", "Tracked since"],
   car_pause: ["Mettre en pause", "Pause"], car_play: ["Reprendre", "Play"], shots: ["Captures d'écran", "Screenshots"]
 };
 Object.keys(X).forEach(function (k) { DEF[k] = { fr: X[k][0], en: X[k][1] }; });
@@ -235,7 +241,59 @@ function cnt(rs) { var n = rs.reduce(function (s, r) { return s + dls(r); }, 0);
 function stats() {
   app.innerHTML = '<a class="back" href="' + hb() + '#/tools">' + esc(t("back")) + '</a><section class="sec"><h1 class="tt">' + esc(t("stats_title")) + '</h1><p class="lead">' + esc(t("stats_lead")) + '</p><div id="st"><p>' + esc(t("loading")) + "</p></div></section>";
   var box = document.getElementById("st");
-  releases().then(function (all) { if (box.isConnected) box.innerHTML = statsHtml(all); }).catch(function () { if (box.isConnected) box.innerHTML = '<p class="empty">' + esc(t("load_error")) + "</p>"; });
+  releases().then(function (all) { if (box.isConnected) { box.innerHTML = statsHtml(all); evo(); } }).catch(function () { if (box.isConnected) box.innerHTML = '<p class="empty">' + esc(t("load_error")) + "</p>"; });
+}
+var STH = null;
+function shist() { return STH || (STH = get("/data/stats-history.json").catch(function () { return null; })); }
+function nice(m) { var p = Math.pow(10, Math.floor(Math.log(m) / Math.LN10)), f = m / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
+function sdate(d) { return new Date(d + "T00:00:00Z").toLocaleDateString(lang, { day: "numeric", month: "short", timeZone: "UTC" }); }
+var CW = 640, CH = 260, CL = 46, CR = 12, CT = 14, CB = 30;
+function cx(i, n, mode) { var iw = CW - CL - CR; return mode === "day" ? CL + (i + 0.5) * iw / n : CL + (n < 2 ? iw / 2 : i * iw / (n - 1)); }
+function chart(pts, mode) {
+  var n = pts.length, iw = CW - CL - CR, ih = CH - CT - CB, mx = Math.max.apply(null, pts.map(function (p) { return p.v; }).concat([1])), step = Math.max(1, Math.ceil(nice(mx / 4))), top = Math.ceil(mx / step) * step, nt = Math.round(top / step), g = "", body = "";
+  var Y = function (v) { return CT + ih - v / top * ih; };
+  for (var k = 0; k <= nt; k++) { var v = step * k, y = Y(v); g += '<line x1="' + CL + '" x2="' + (CW - CR) + '" y1="' + y + '" y2="' + y + '" class="gl"/><text x="' + (CL - 8) + '" y="' + (y + 4) + '" class="ax" text-anchor="end">' + nf(Math.round(v * 10) / 10) + "</text>"; }
+  if (mode === "day") { var bw = Math.max(2, iw / n * 0.7); pts.forEach(function (p, i) { var h = p.v / top * ih; body += '<rect x="' + (cx(i, n, mode) - bw / 2) + '" y="' + (CT + ih - h) + '" width="' + bw + '" height="' + h + '" rx="2" class="bar"/>'; }); }
+  else { var d = pts.map(function (p, i) { return (i ? "L" : "M") + cx(i, n, mode) + " " + Y(p.v); }).join(""); body = '<path d="' + d + "L" + cx(n - 1, n, mode) + " " + (CT + ih) + "L" + cx(0, n, mode) + " " + (CT + ih) + 'Z" class="area"/><path d="' + d + '" class="ln"/>'; }
+  var lab = [0, Math.floor((n - 1) / 2), n - 1].filter(function (v, i, a) { return a.indexOf(v) === i; }).map(function (i) { return '<text x="' + cx(i, n, mode) + '" y="' + (CH - 8) + '" class="ax" text-anchor="' + (i === 0 ? "start" : i === n - 1 ? "end" : "middle") + '">' + esc(sdate(pts[i].d)) + "</text>"; }).join("");
+  return '<svg viewBox="0 0 ' + CW + " " + CH + '" class="chart" role="img" aria-label="' + esc(t("stats_evo")) + '">' + g + body + lab + '<line class="cur" y1="' + CT + '" y2="' + (CT + ih) + '" x1="0" x2="0" style="display:none"/></svg>';
+}
+function evo() {
+  var box = document.getElementById("evo");
+  if (!box) return;
+  shist().then(function (h) {
+    if (!box.isConnected) return;
+    var days = ((h && h.days) || []).slice().sort(function (a, b) { return a.d < b.d ? -1 : 1; }), head = "<h2>" + esc(t("stats_evo")) + "</h2>";
+    if (days.length < 2) { box.innerHTML = head + '<p class="empty">' + esc(t("stats_none_hist")) + "</p>"; return; }
+    var st = { tool: "", per: 30, mode: "day" }, tl = T.tools.filter(function (x) { return x.releasePrefix; });
+    box.innerHTML = head + '<div class="evc"><select id="evt" aria-label="' + esc(t("stats_tools")) + '"><option value="">' + esc(t("stats_alltools")) + "</option>" + tl.map(function (x) { return '<option value="' + esc(x.releasePrefix) + '">' + esc(loc(x.name)) + "</option>"; }).join("") + "</select>" +
+      [["day", "stats_perday"], ["cum", "stats_cumul"]].map(function (m) { return '<button type="button" class="chip" data-m="' + m[0] + '" aria-pressed="' + (st.mode === m[0]) + '">' + esc(t(m[1])) + "</button>"; }).join("") +
+      [[7, "stats_p7"], [30, "stats_p30"], [90, "stats_p90"], [0, "stats_pall"]].map(function (p) { return '<button type="button" class="chip" data-p="' + p[0] + '" aria-pressed="' + (st.per === p[0]) + '">' + esc(t(p[1])) + "</button>"; }).join("") +
+      '</div><div class="kpi" id="evk"></div><div class="chartbox"><div id="evg"></div><div class="tip" id="evp" hidden></div></div><p class="note">' + esc(t("stats_since") + " " + sdate(days[0].d) + ".") + "</p>";
+    function draw() {
+      var all = days.map(function (d) { var s = 0; Object.keys(d.c).forEach(function (tag) { if (!st.tool || tag.indexOf(st.tool + "-v") === 0) Object.keys(d.c[tag]).forEach(function (a) { s += d.c[tag][a] || 0; }); }); return { d: d.d, v: s }; });
+      var day = all.slice(1).map(function (p, i) { return { d: p.d, v: Math.max(0, p.v - all[i].v) }; }), last = new Date(all[all.length - 1].d + "T00:00:00Z").getTime();
+      var inP = function (p) { return !st.per || new Date(p.d + "T00:00:00Z").getTime() > last - st.per * 864e5; };
+      var dsel = day.filter(inP), src = st.mode === "day" ? day : all, pts = src.filter(inP);
+      if (!pts.length) pts = src.slice(-1);
+      var tot = dsel.reduce(function (a, p) { return a + p.v; }, 0), best = dsel.reduce(function (b, p) { return p.v > b.v ? p : b; }, { v: 0, d: "" });
+      document.getElementById("evk").innerHTML = "<div><b>" + nf(tot) + "</b><span>" + esc(t("stats_ptotal")) + "</span></div><div><b>" + nf(best.v) + "</b><span>" + esc(t("stats_best") + (best.d ? " (" + sdate(best.d) + ")" : "")) + "</span></div><div><b>" + new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(dsel.length ? tot / dsel.length : 0) + "</b><span>" + esc(t("stats_avg")) + "</span></div>";
+      var g = document.getElementById("evg"), tip = document.getElementById("evp");
+      g.innerHTML = chart(pts, st.mode);
+      g.onpointermove = function (e) {
+        var svg = g.querySelector("svg"), r = svg.getBoundingClientRect(), n = pts.length, vx = (e.clientX - r.left) / r.width * CW, iw = CW - CL - CR;
+        var i = Math.max(0, Math.min(n - 1, st.mode === "day" ? Math.floor((vx - CL) / (iw / n)) : Math.round((vx - CL) / (iw / Math.max(1, n - 1))))), x = cx(i, n, st.mode), c = svg.querySelector(".cur");
+        c.setAttribute("x1", x); c.setAttribute("x2", x); c.style.display = "";
+        tip.hidden = false; tip.textContent = sdate(pts[i].d) + " : " + nf(pts[i].v) + " " + (st.mode === "day" ? t("dl_count") : t("stats_totshort"));
+        tip.style.left = Math.max(60, Math.min(r.width - 60, x / CW * r.width)) + "px";
+      };
+      g.onpointerleave = function () { tip.hidden = true; var c = g.querySelector(".cur"); if (c) c.style.display = "none"; };
+    }
+    box.querySelector("#evt").onchange = function () { st.tool = this.value; draw(); };
+    box.querySelectorAll("[data-m]").forEach(function (b) { b.onclick = function () { st.mode = b.getAttribute("data-m"); box.querySelectorAll("[data-m]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); draw(); }; });
+    box.querySelectorAll("[data-p]").forEach(function (b) { b.onclick = function () { st.per = +b.getAttribute("data-p"); box.querySelectorAll("[data-p]").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); draw(); }; });
+    draw();
+  });
 }
 function statsHtml(all) {
   var rel = all.filter(function (r) { return !r.draft; }), used = {}, grand = 0, nver = 0;
@@ -250,7 +308,7 @@ function statsHtml(all) {
   if (!bl.length) return '<p class="empty">' + esc(t("no_release")) + "</p>";
   bl.forEach(function (b) { grand += b.tot; nver += b.rs.length; });
   var ntools = bl.filter(function (b) { return !b.o; }).length;
-  return '<div class="sc"><div><b>' + nf(grand) + "</b><span>" + esc(t("stats_total")) + "</span></div><div><b>" + nf(ntools) + "</b><span>" + esc(t("stats_tools")) + "</span></div><div><b>" + nf(nver) + "</b><span>" + esc(t("stats_versions")) + "</span></div></div>" +
+  return '<div class="sc"><div><b>' + nf(grand) + "</b><span>" + esc(t("stats_total")) + "</span></div><div><b>" + nf(ntools) + "</b><span>" + esc(t("stats_tools")) + "</span></div><div><b>" + nf(nver) + "</b><span>" + esc(t("stats_versions")) + "</span></div></div><div class=\"evo\" id=\"evo\"></div>" +
     bl.map(function (b) {
       return '<div class="stb"><h3><span>' + esc(b.name) + "</span><span>" + nf(b.tot) + '</span></h3><div class="scroll"><table><thead><tr><th>' + esc(t("version")) + "</th><th>" + esc(t("date")) + "</th><th>" + esc(t("stats_downloads")) + "</th></tr></thead><tbody>" +
         b.rs.map(function (r) { return "<tr><td>" + esc(b.p ? r.tag_name.slice(b.p.length) : r.tag_name) + "</td><td>" + esc(dt(r.published_at)) + "</td><td>" + nf(dls(r)) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
