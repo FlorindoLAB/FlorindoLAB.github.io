@@ -7,11 +7,11 @@ Three.js r147 (https://threejs.org)
 
 IBM Plex Sans, IBM Plex Mono (https://github.com/IBM/plex)
   SIL Open Font License 1.1 — Copyright © 2017 IBM Corp.
-  Texte complet : licences/OFL.txt
+  Fichiers et licence : https://florindolab.com/assets/fonts/ (OFL-IBM-Plex-Sans.txt, OFL-IBM-Plex-Mono.txt)
 
 Bricolage Grotesque (https://github.com/ateliertriay/bricolage)
   SIL Open Font License 1.1 — Copyright 2022 The Bricolage Grotesque Project Authors
-  Texte complet : licences/OFL.txt
+  Fichiers et licence : https://florindolab.com/assets/fonts/ (OFL-Bricolage-Grotesque.txt)
 
 Algorithmes (implémentations écrites pour ce logiciel) :
   - Bruit simplex 2D, d'après Stefan Gustavson (domaine public)
