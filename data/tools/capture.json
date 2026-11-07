@@ -24,7 +24,7 @@
       "en": "I built Capture by FlorindoLAB to make the presentation videos of my own tools. It records a single window,\ncleanly cut out on a transparent background, with margins, rounded corners and a drop shadow. The cursor\nis recorded separately and redrawn sharp, and zooms are placed automatically on your clicks.\nAfter recording, a small editor lets you cut, reorder and speed up sections, add transitions, text, arrows,\nboxes, spotlights or blurs, and adjust system sound and microphone separately. It isn't a video editor: it's\nmade to get a ready-to-use file out fast.\nOne click exports to the right format: ProRes 4444 MOV with transparency for DaVinci Resolve, MP4 for\nYouTube (1080p, 4K), vertical for Instagram and Shorts, transparent WebM for the web, or a PNG sequence.\nSeveral formats can be exported in one go.\nPortable version: nothing to install. Interface and user guide in English and French."
     },
     "screenshots": [
-      "/assets/uploads/capture_carousel.webp"
+      "/assets/uploads/capture_carousel-1.webp"
     ],
     "video": null,
     "notice": {
