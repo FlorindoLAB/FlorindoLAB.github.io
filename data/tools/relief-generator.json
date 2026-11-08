@@ -23,7 +23,7 @@
       "en": "Relief Generator creates height maps and displacement maps for Blender, Unreal Engine, Unity, Godot, Maya, 3ds Max, Cinema 4D, Houdini, motion design and VFX. Everything runs in the browser: nothing to install, no account, and no image or project is ever sent to a server.\n\n## Express mode\n- 60 presets in 13 categories: mountains, volcanoes, dunes, islands, canyons, rocky surfaces, organic reliefs, motion design patterns…\n- One-click new variation, quick erosion, seamless tiling.\n\n## Advanced mode\n- Layer stack: generators (Perlin, Simplex, Voronoi, mountains, dunes, craters, volcanoes…), imported images, filters, hydraulic and thermal erosion, sculpting.\n- Blend modes, elevation limits and painted masks on every layer.\n- Non-destructive sculpting in 2D and 3D: raise, lower, smooth, flatten, pinch, noise, blur, clone.\n\n## Export\n- 8- and 16-bit PNG, 16-bit RAW, 32-bit EXR, up to 8192 × 8192 px or any custom size.\n- Blender, Unreal, Unity, Godot, Maya, 3ds Max, Cinema 4D and Houdini profiles.\n- Derived maps: normal map, slope, curvature, ambient occlusion, height, slope and cavity masks, exportable as a .zip pack.\n- Savable projects (.json) to pick up or reproduce a result.\n\nInterface in French and English. Works in recent Chrome, Edge, Firefox and Safari.\n\nThis is a beta version: if something does not work, the tool's “About” button copies the technical information to include in your message."
     },
     "screenshots": [
-      "/assets/uploads/relief-generator_preview.webp"
+      "/assets/uploads/relief_base_carousel.webp"
     ],
     "notice": {
       "fr": "/assets/uploads/ReliefGenerator-notice-fr.pdf",
@@ -34,9 +34,9 @@
     "webUrl": "tools/relief-generator/"
   },
   "accueil": {
-    "hero": false,
+    "hero": true,
     "featured": false,
-    "isNew": true,
-    "order": 5
+    "isNew": false,
+    "order": 100
   }
 }
