@@ -225,3 +225,12 @@ blockquote.callout{max-width:70ch;margin:0 0 22px;padding:14px 18px;background:v
 .chart .cur{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
 .tip{position:absolute;top:6px;transform:translateX(-50%);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:5px 9px;font-size:13px;white-space:nowrap;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.25)}
 .evo .note{color:var(--muted);font-size:13.5px;margin:10px 0 0}
+
+/* ---- historique des versions (liste lisible, y compris sur téléphone) ---- */
+.hist{list-style:none;margin:10px 0 0;padding:0;text-align:left}
+.hist li{padding:12px 0;border-top:1px solid var(--line)}.hist li:first-child{border-top:0}
+.hist .hh{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.hist .hh b{font:800 17px "Bricolage Grotesque",sans-serif}.hist .hh span{color:var(--muted);font-size:13.5px;white-space:nowrap}
+.hist details{margin:6px 0 0;padding:0;border:0}.hist summary{font-size:14px;color:var(--accent-ink);cursor:pointer}
+.hn{font-size:14.5px;line-height:1.55;color:var(--muted);margin-top:6px}.hn ul{margin:4px 0 4px 18px;padding:0}.hn li{margin:3px 0}.hn p{margin:4px 0}.hn h4{margin:8px 0 2px;font-size:14.5px;color:var(--fg)}
+.hf{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:13.5px}.hf a{color:var(--muted);overflow-wrap:anywhere}

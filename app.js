@@ -62,6 +62,19 @@ function t(k) { return (L[lang] && L[lang][k]) || (L.en && L.en[k]) || (DEF[k] &
 function get(u) { return fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }); }
 function dt(s) { return new Date(s).toLocaleDateString(lang, { year: "numeric", month: "long", day: "numeric" }); }
 function sz(n) { var m = n > 1048576, v = m ? n / 1048576 : n / 1024; return new Intl.NumberFormat(lang, { maximumFractionDigits: 1 }).format(v) + (m ? " MB" : " KB"); }
+function dts(s) { return new Date(s).toLocaleDateString(lang, { day: "numeric", month: "short", year: "numeric" }); }
+function notesHtml(b) {
+  var out = "", list = [], flush = function () { if (list.length) { out += "<ul>" + list.map(function (l) { return "<li>" + rich(l) + "</li>"; }).join("") + "</ul>"; list = []; } };
+  (b || "").replace(/\r/g, "").split("\n").forEach(function (l) {
+    var m = /^\s*[-*+] (.*)$/.exec(l);
+    if (m) { list.push(m[1]); return; }
+    flush();
+    var h = /^#{1,6} (.*)$/.exec(l);
+    if (h) out += "<h4>" + rich(h[1]) + "</h4>"; else if (l.trim()) out += "<p>" + rich(l.trim()) + "</p>";
+  });
+  flush();
+  return out;
+}
 function note(s) { s = (s || "").replace(/\s*\n+\s*/g, " ").trim(); return s.length > 140 ? s.slice(0, 140) + "…" : s; }
 
 function tags(x) {
@@ -92,7 +105,10 @@ function fill(box, x, all) {
   var p = x.releasePrefix + "-v", rs = all.filter(function (r) { return !r.draft && r.tag_name.indexOf(p) === 0; });
   if (!rs.length) { box.innerHTML = '<p class="empty">' + esc(t("no_release")) + "</p>"; return; }
   var rows = rs.map(function (q) {
-    return "<tr><td>" + esc(q.tag_name.slice(p.length)) + "</td><td>" + esc(dt(q.published_at)) + "</td><td>" + esc(note(q.body)) + "</td><td>" + q.assets.map(function (a) { return '<a data-dl href="' + esc(a.browser_download_url) + '">' + esc(a.name) + "</a>"; }).join("<br>") + "</td></tr>";
+    var nt = notesHtml(q.body);
+    return '<li><div class="hh"><b>' + esc(q.tag_name.slice(p.length)) + "</b><span>" + esc(dts(q.published_at)) + "</span></div>" +
+      (nt ? "<details><summary>" + esc(t("notes")) + '</summary><div class="hn">' + nt + "</div></details>" : "") +
+      '<div class="hf">' + q.assets.map(function (a) { return '<a data-dl href="' + esc(a.browser_download_url) + '">' + esc(a.name) + "</a>"; }).join("") + "</div></li>";
   }).join("");
   var gs = groups(x, rs), rl = [], head, ks = gs.map(function (g) { return g.k; });
   gs.forEach(function (g) { if (rl.indexOf(g.r) < 0) rl.push(g.r); });
@@ -103,7 +119,7 @@ function fill(box, x, all) {
     head = '<div class="dl-head"><h2>' + esc(t("latest_all")) + "</h2>" + cnt(rs) + "</div>" + gs.map(function (g) { return '<div class="pg"><p class="pn"><b>' + esc(plat(g.k)) + "</b> " + esc(g.r.tag_name.slice(p.length)) + ", " + esc(dt(g.r.published_at)) + "</p>" + dlbtn(x, g.a, "") + "</div>"; }).join("");
   }
   box.innerHTML = head + (ks.indexOf("macos-arm") > -1 && ks.indexOf("macos-intel") > -1 ? '<p class="hint">' + esc(t("mac_hint")) + "</p>" : "") + (secPage() ? '<p class="alertnote"><a href="' + esc(secUrl()) + '">' + esc(t("alertnote")) + "</a></p>" : "") +
-    (rs.length > 1 ? "<details><summary>" + esc(t("history")) + '</summary><div class="scroll"><table><thead><tr><th>' + esc(t("version")) + "</th><th>" + esc(t("date")) + "</th><th>" + esc(t("notes")) + "</th><th>" + esc(t("files")) + "</th></tr></thead><tbody>" + rows + "</tbody></table></div></details>" : "");
+    (rs.length > 1 ? "<details><summary>" + esc(t("history")) + '</summary><ul class="hist">' + rows + "</ul></details>" : "");
 }
 function tool(id) {
   var x = T.tools.filter(function (y) { return y.id === id; })[0];

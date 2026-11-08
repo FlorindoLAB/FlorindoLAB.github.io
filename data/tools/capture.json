@@ -39,8 +39,8 @@
   },
   "accueil": {
     "hero": true,
-    "featured": false,
+    "featured": true,
     "isNew": true,
-    "order": 100
+    "order": 20
   }
 }

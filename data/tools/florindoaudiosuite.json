@@ -43,6 +43,6 @@
     "hero": true,
     "featured": true,
     "isNew": true,
-    "order": 30
+    "order": 10
   }
 }
