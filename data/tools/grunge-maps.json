@@ -24,7 +24,11 @@
     },
     "screenshots": [
       "/assets/uploads/grunge-maps_preview.webp"
-    ]
+    ],
+    "notice": {
+      "fr": "/assets/uploads/Notice - Grunge Maps by FlorindoLAB (FR).pdf",
+      "en": "/assets/uploads/User guide - Grunge Maps by FlorindoLAB (EN).pdf"
+    }
   },
   "telechargement": {
     "webUrl": "tools/grunge-maps/"
