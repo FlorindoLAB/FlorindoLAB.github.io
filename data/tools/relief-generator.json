@@ -34,7 +34,7 @@
     "webUrl": "tools/relief-generator/"
   },
   "accueil": {
-    "hero": false,
+    "hero": true,
     "featured": false,
     "isNew": true,
     "order": 5
