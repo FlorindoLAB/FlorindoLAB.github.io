@@ -127,7 +127,9 @@ const I18N_EN = {
   'Pente minimale (°)': 'Minimum slope (°)', 'Pente maximale (°)': 'Maximum slope (°)', 'Transition (°)': 'Transition (°)',
   // Export
   'Export': 'Export', 'Personnalisé': 'Custom', 'Blender (Displace)': 'Blender (Displace)', 'Unreal Engine (Landscape)': 'Unreal Engine (Landscape)', 'Unity (Terrain)': 'Unity (Terrain)',
-  'Godot (Terrain3D / HTerrain)': 'Godot (Terrain3D / HTerrain)', 'PNG 16 bits': '16-bit PNG', 'PNG 8 bits': '8-bit PNG', 'RAW 16 bits': '16-bit RAW',
+  'Godot (Terrain3D / HTerrain)': 'Godot (Terrain3D / HTerrain)', 'Maya (Arnold, displacement)': 'Maya (Arnold, displacement)',
+  '3ds Max (Displace, V-Ray, Corona, Arnold)': '3ds Max (Displace, V-Ray, Corona, Arnold)', 'Cinema 4D (Displacer, Redshift)': 'Cinema 4D (Displacer, Redshift)',
+  'Houdini (Heightfield, displacement)': 'Houdini (Heightfield, displacement)', 'PNG 16 bits': '16-bit PNG', 'PNG 8 bits': '8-bit PNG', 'RAW 16 bits': '16-bit RAW',
   '65 536 niveaux, recommandé pour le displacement.': '65,536 levels, recommended for displacement.',
   '256 niveaux. Léger, mais crée des marches sur les pentes douces.': '256 levels. Lightweight, but creates steps on gentle slopes.',
   'Entiers non signés, little-endian, sans en-tête (.raw / .r16).': 'Unsigned integers, little-endian, no header (.raw / .r16).',
@@ -184,6 +186,10 @@ const I18N_EN = {
   'Pas encore inclus : sortie en plusieurs tuiles.': 'Not included yet: multi-tile output.', 'Pile vide': 'Empty stack', 'Relief actuel': 'Current terrain', 'Bibliothèque': 'Library', 'Afficher ou masquer la bibliothèque': 'Show or hide the library'
 };
 const I18N_SENT = [
+  ["Maya : nœud File en espace « Raw », « Alpha is Luminance » coché, branché dans un displacementShader. Avec Arnold, activez la subdivision du maillage et réglez la hauteur dans ses attributs Displacement ; avec Zero Value à 0, le noir ne déplace pas la surface.", 'Maya: File node in “Raw” color space with “Alpha is Luminance” enabled, plugged into a displacementShader. With Arnold, enable mesh subdivision and set the height in its Displacement attributes; with Zero Value at 0, black does not move the surface.'],
+  ["3ds Max : modificateur Displace (Bitmap) ou displacement du moteur de rendu. Au chargement de l'image, choisissez « Override » avec un gamma de 1,0, sinon le relief est déformé.", "3ds Max: Displace modifier (Bitmap) or the renderer's displacement. When loading the image, choose “Override” with a gamma of 1.0, otherwise the relief is distorted."],
+  ['Cinema 4D : déformateur Displacer (Shader › Bitmap), ou canal Displacement du matériau avec Sub-Polygon Displacement. Réglez le profil couleur du Bitmap sur « Linéaire ». Avec Redshift : nœud Texture en Raw dans un nœud Displacement.', "Cinema 4D: Displacer deformer (Shader › Bitmap), or the material's Displacement channel with Sub-Polygon Displacement. Set the Bitmap color profile to “Linear”. With Redshift: Texture node in Raw into a Displacement node."],
+  ["Houdini : nœud SOP « HeightField File » pour un terrain (ajustez ensuite la hauteur), ou texture de displacement dans Karma / Mantra sans correction gamma (espace linéaire / Raw). L'EXR 32 bits garde toute la précision.", 'Houdini: “HeightField File” SOP for a terrain (then adjust the height), or a displacement texture in Karma / Mantra without gamma correction (linear / Raw). 32-bit EXR keeps full precision.'],
   ['Très grande résolution : comptez de quelques secondes à plus d\'une minute.', 'Very large resolution: expect a few seconds to over a minute.'],
   ['Blender : modificateur Displace ou nœud Displacement, image en espace « Non-Color ».', 'Blender: Displace modifier or Displacement node, image in “Non-Color” space.'],
   ['Unreal : Landscape › Import from File. Tailles recommandées 1009, 2017, 4033 ou 8129 px.', 'Unreal: Landscape › Import from File. Recommended sizes 1009, 2017, 4033 or 8129 px.'],
@@ -351,7 +357,11 @@ const PROFILES = {
   blender: { format: 'png16', res: '4096', note: 'Blender : modificateur Displace ou nœud Displacement, image en espace « Non-Color ».' },
   unreal: { format: 'png16', res: '2017', note: 'Unreal : Landscape › Import from File. Tailles recommandées 1009, 2017, 4033 ou 8129 px.' },
   unity: { format: 'raw16', res: '2049', note: 'Unity : Terrain › Import Raw, Depth 16 bit, Byte Order Windows. Taille 2ⁿ + 1.' },
-  godot: { format: 'png16', res: '2048', note: 'Godot : Terrain3D ou HTerrain importent un PNG 16 bits ; l\'échelle de hauteur se règle dans le plugin.' }
+  godot: { format: 'png16', res: '2048', note: 'Godot : Terrain3D ou HTerrain importent un PNG 16 bits ; l\'échelle de hauteur se règle dans le plugin.' },
+  maya: { format: 'exr32', res: '4096', note: "Maya : nœud File en espace « Raw », « Alpha is Luminance » coché, branché dans un displacementShader. Avec Arnold, activez la subdivision du maillage et réglez la hauteur dans ses attributs Displacement ; avec Zero Value à 0, le noir ne déplace pas la surface." },
+  max: { format: 'png16', res: '4096', note: "3ds Max : modificateur Displace (Bitmap) ou displacement du moteur de rendu. Au chargement de l'image, choisissez « Override » avec un gamma de 1,0, sinon le relief est déformé." },
+  c4d: { format: 'png16', res: '4096', note: 'Cinema 4D : déformateur Displacer (Shader › Bitmap), ou canal Displacement du matériau avec Sub-Polygon Displacement. Réglez le profil couleur du Bitmap sur « Linéaire ». Avec Redshift : nœud Texture en Raw dans un nœud Displacement.' },
+  houdini: { format: 'exr32', res: '2048', note: "Houdini : nœud SOP « HeightField File » pour un terrain (ajustez ensuite la hauteur), ou texture de displacement dans Karma / Mantra sans correction gamma (espace linéaire / Raw). L'EXR 32 bits garde toute la précision." }
 };
 
 // ---------- État ----------
