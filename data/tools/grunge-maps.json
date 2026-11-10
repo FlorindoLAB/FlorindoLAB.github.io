@@ -34,9 +34,9 @@
     "webUrl": "tools/grunge-maps/"
   },
   "accueil": {
-    "hero": false,
+    "hero": true,
     "featured": false,
-    "isNew": true,
+    "isNew": false,
     "order": 6
   }
 }
