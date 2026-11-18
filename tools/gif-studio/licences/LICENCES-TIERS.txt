@@ -1,0 +1,20 @@
+GIF Studio by FlorindoLAB — composants tiers / third-party components
+=====================================================================
+
+Le moteur (rendu, animation, filtres) et l'encodeur GIF sont du code original
+FlorindoLAB. Aucune bibliothèque tierce n'est incluse dans l'outil.
+The engine (rendering, animation, filters) and the GIF encoder are original
+FlorindoLAB code. No third-party library is bundled with the tool.
+
+Polices / Fonts (chargées depuis Google Fonts / loaded from Google Fonts)
+- Anton — Vernon Adams — SIL Open Font License 1.1
+- Inter — Rasmus Andersson — SIL Open Font License 1.1
+- Bangers — Vernon Adams — SIL Open Font License 1.1
+- Bebas Neue — Dharma Type — SIL Open Font License 1.1
+- Lobster — Pablo Impallari — SIL Open Font License 1.1
+- Permanent Marker — Font Diner — SIL Open Font License 1.1 (vérifier sur Google Fonts : certaines versions sont publiées sous Apache 2.0)
+- Roboto Mono — Christian Robertson — Apache License 2.0 / SIL OFL 1.1 selon la version
+
+Emojis : dessinés avec la police emoji installée sur l'appareil de l'utilisateur
+(aucune police emoji n'est distribuée avec l'outil).
+Texte de la licence / Licence text : https://openfontlicense.org

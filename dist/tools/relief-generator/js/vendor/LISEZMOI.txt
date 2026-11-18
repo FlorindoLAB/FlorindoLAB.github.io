@@ -1,0 +1,4 @@
+Déposez ici three.min.js et OrbitControls.js (Three.js r147) pour héberger la vue 3D sur le site.
+Tant qu'ils sont absents, l'outil les charge depuis cdn.jsdelivr.net.
+https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js
+https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js

@@ -1,0 +1,300 @@
+backend:
+  name: github
+  repo: FlorindoLAB/FlorindoLAB.github.io
+  branch: main
+media_folder: assets/uploads
+public_folder: /assets/uploads
+collections:
+  - name: outils
+    label: "Outils"
+    label_singular: "outil"
+    folder: data/tools
+    create: true
+    format: json
+    extension: json
+    identifier_field: id
+    summary: "{{id}}"
+    sortable_fields: ["id"]
+    fields:
+      - {label: "Identifiant (adresse de la page : minuscules, sans espace, à ne plus changer ensuite)", name: id, widget: string}
+      - label: "1. Essentiel"
+        name: essentiel
+        widget: object
+        fields:
+          - label: "Nom"
+            name: name
+            widget: object
+            fields:
+              - {label: Français, name: fr, widget: string}
+              - {label: "English (facultatif)", name: en, widget: string, required: false}
+          - label: "Résumé (une ou deux phrases)"
+            name: summary
+            widget: object
+            fields:
+              - {label: Français, name: fr, widget: text}
+              - {label: "English (facultatif)", name: en, widget: text, required: false}
+          - label: "Catégories (cliquez sur Add et tapez un nom : Vidéo, VST, Plugin…)"
+            name: categories
+            widget: list
+            required: false
+            field: {label: Catégorie, name: category, widget: string}
+          - label: "Plateformes (cliquez sur Add et tapez un nom : Windows, macOS, Navigateur…)"
+            name: platforms
+            widget: list
+            required: false
+            field: {label: Plateforme, name: platform, widget: string}
+          - {label: "Statut", name: status, widget: select, options: [{label: "Bientôt disponible", value: soon}], required: false}
+      - label: "2. Page de l'outil"
+        name: page
+        widget: object
+        fields:
+          - label: "Description détaillée (## titre, - liste, **gras**, [mot](adresse))"
+            name: description
+            widget: object
+            fields:
+              - {label: Français, name: fr, widget: text, required: false}
+              - {label: "English (facultatif)", name: en, widget: text, required: false}
+          - label: "Captures d'écran (6 maximum ; la première sert au carrousel d'accueil)"
+            name: screenshots
+            widget: list
+            required: false
+            max: 6
+            field: {label: Capture, name: image, widget: image}
+          - label: "Vidéo explicative (lien YouTube ou Vimeo)"
+            name: video
+            widget: object
+            required: false
+            fields:
+              - {label: Français, name: fr, widget: string, required: false}
+              - {label: English, name: en, widget: string, required: false}
+          - label: "Notice d'utilisation (fichier PDF)"
+            name: notice
+            widget: object
+            required: false
+            fields:
+              - {label: Français, name: fr, widget: file, multiple: false, required: false}
+              - {label: English, name: en, widget: file, multiple: false, required: false}
+      - label: "3. Adresse et téléchargement"
+        name: telechargement
+        widget: object
+        collapsed: true
+        required: false
+        fields:
+          - {label: "Préfixe des versions (ex. mon-outil) : début du nom des Releases GitHub", name: releasePrefix, widget: string, required: false}
+          - {label: "Adresse de l'outil web (ex. tools/mon-outil/)", name: webUrl, widget: string, required: false}
+          - label: "Anciens identifiants (redirigent les anciennes adresses vers cette page)"
+            name: anciens_ids
+            widget: list
+            required: false
+            field: {label: Identifiant, name: id, widget: string}
+      - label: "4. Accueil"
+        name: accueil
+        widget: object
+        collapsed: true
+        required: false
+        fields:
+          - {label: "Afficher dans le carrousel de l'accueil", name: hero, widget: boolean, default: false, required: false}
+          - {label: "Mettre à la une sur l'accueil", name: featured, widget: boolean, default: false, required: false}
+          - {label: "Afficher le badge Nouveau", name: isNew, widget: boolean, default: false, required: false}
+          - {label: "Ordre sur l'accueil (petit nombre = en premier)", name: order, widget: number, value_type: int, required: false, default: 100}
+  - name: taxonomie
+    label: "Catégories et plateformes"
+    files:
+      - name: taxonomy
+        label: "Noms et traductions (facultatif)"
+        file: data/taxonomy.json
+        fields:
+          - label: "Catégories : noms en français et en anglais"
+            name: categories
+            widget: list
+            required: false
+            summary: "{{fields.id}}"
+            fields:
+              - {label: "Identifiant (minuscules, sans espace)", name: id, widget: string}
+              - {label: "Nom en français", name: fr, widget: string}
+              - {label: "Nom en anglais", name: en, widget: string}
+          - label: "Plateformes : noms en français et en anglais"
+            name: platforms
+            widget: list
+            required: false
+            summary: "{{fields.id}}"
+            fields:
+              - {label: "Identifiant (minuscules, sans espace)", name: id, widget: string}
+              - {label: "Nom en français", name: fr, widget: string}
+              - {label: "Nom en anglais", name: en, widget: string}
+  - name: reglages
+    label: "Réglages et textes"
+    files:
+      - name: site
+        label: "Liens et langues"
+        file: data/site.json
+        fields:
+          - {label: "Dépôt des téléchargements (compte/dépôt)", name: repo, widget: string}
+          - {label: "Lien Ko-fi", name: donateUrl, widget: string}
+          - {label: "Lien Instagram", name: instagramUrl, widget: string, required: false}
+          - {label: "Clé du formulaire de contact (Web3Forms)", name: contactKey, widget: string, required: false}
+          - label: "Bandeau d'information : texte personnalisé (facultatif, remplace le texte par défaut)"
+            name: banner
+            widget: object
+            required: false
+            fields:
+              - {label: Français, name: fr, widget: text, required: false}
+              - {label: English, name: en, widget: text, required: false}
+          - {label: "Masquer le bandeau d'information", name: bannerOff, widget: boolean, default: false, required: false}
+          - label: "Langues du site (codes)"
+            name: languages
+            widget: list
+            field: {label: Langue, name: lang, widget: string}
+      - name: textes_fr
+        label: "Textes du site : français"
+        file: i18n/fr.json
+        fields:
+          - {label: "lang_name", name: lang_name, widget: string}
+          - {label: "Slogan (titre de l'onglet)", name: tagline, widget: string}
+          - {label: "nav_tools", name: nav_tools, widget: string}
+          - {label: "nav_support", name: nav_support, widget: string}
+          - {label: "Accueil : titre", name: hero_title, widget: string}
+          - {label: "Accueil : texte", name: hero_text, widget: text}
+          - {label: "Accueil : bouton Voir les outils", name: see_tools, widget: string}
+          - {label: "Accueil : bouton Soutenir", name: support_project, widget: string}
+          - {label: "hero_alt", name: hero_alt, widget: string}
+          - {label: "Titre de la liste des outils", name: tools, widget: string}
+          - {label: "Texte sous le titre de la liste", name: tools_lead, widget: string}
+          - {label: "all", name: all, widget: string}
+          - {label: "empty", name: empty, widget: string}
+          - {label: "soon", name: soon, widget: string}
+          - {label: "open", name: open, widget: string}
+          - {label: "back", name: back, widget: string}
+          - {label: "open_web", name: open_web, widget: string}
+          - {label: "latest", name: latest, widget: string}
+          - {label: "history", name: history, widget: string}
+          - {label: "version", name: version, widget: string}
+          - {label: "date", name: date, widget: string}
+          - {label: "notes", name: notes, widget: string}
+          - {label: "files", name: files, widget: string}
+          - {label: "no_release", name: no_release, widget: string}
+          - {label: "loading", name: loading, widget: string}
+          - {label: "load_error", name: load_error, widget: string}
+          - {label: "p_web", name: p_web, widget: string}
+          - {label: "p_dctl", name: p_dctl, widget: string}
+          - {label: "p_android", name: p_android, widget: string}
+          - {label: "p_windows", name: p_windows, widget: string}
+          - {label: "Page Soutenir : titre", name: support_title, widget: string}
+          - {label: "Page Soutenir : texte", name: support_text, widget: text}
+          - {label: "Bouton de don", name: coffee, widget: string}
+          - {label: "Pied de page", name: footer, widget: string}
+          - {label: "nav_license", name: nav_license, widget: string}
+          - {label: "Licence : titre", name: license_title, widget: string}
+          - {label: "Licence : introduction", name: license_lead, widget: text}
+          - {label: "Lien vers la licence (fiches d'outils)", name: license_link, widget: string}
+          - {label: "Badge Nouveau", name: new, widget: string}
+          - {label: "Titre du bloc À la une", name: featured, widget: string}
+          - {label: "Pop-up de téléchargement : titre", name: thanks_title, widget: string}
+          - {label: "Pop-up de téléchargement : message", name: thanks_text, widget: text}
+          - {label: "Pop-up de téléchargement : temps libre et dons", name: thanks_free, widget: text}
+          - {label: "Pop-up : bouton Instagram", name: follow_ig, widget: string}
+          - {label: "Pop-up : bouton Fermer", name: close, widget: string}
+      - name: textes_en
+        label: "Textes du site : anglais"
+        file: i18n/en.json
+        fields:
+          - {label: "lang_name", name: lang_name, widget: string}
+          - {label: "Slogan (titre de l'onglet)", name: tagline, widget: string}
+          - {label: "nav_tools", name: nav_tools, widget: string}
+          - {label: "nav_support", name: nav_support, widget: string}
+          - {label: "Accueil : titre", name: hero_title, widget: string}
+          - {label: "Accueil : texte", name: hero_text, widget: text}
+          - {label: "Accueil : bouton Voir les outils", name: see_tools, widget: string}
+          - {label: "Accueil : bouton Soutenir", name: support_project, widget: string}
+          - {label: "hero_alt", name: hero_alt, widget: string}
+          - {label: "Titre de la liste des outils", name: tools, widget: string}
+          - {label: "Texte sous le titre de la liste", name: tools_lead, widget: string}
+          - {label: "all", name: all, widget: string}
+          - {label: "empty", name: empty, widget: string}
+          - {label: "soon", name: soon, widget: string}
+          - {label: "open", name: open, widget: string}
+          - {label: "back", name: back, widget: string}
+          - {label: "open_web", name: open_web, widget: string}
+          - {label: "latest", name: latest, widget: string}
+          - {label: "history", name: history, widget: string}
+          - {label: "version", name: version, widget: string}
+          - {label: "date", name: date, widget: string}
+          - {label: "notes", name: notes, widget: string}
+          - {label: "files", name: files, widget: string}
+          - {label: "no_release", name: no_release, widget: string}
+          - {label: "loading", name: loading, widget: string}
+          - {label: "load_error", name: load_error, widget: string}
+          - {label: "p_web", name: p_web, widget: string}
+          - {label: "p_dctl", name: p_dctl, widget: string}
+          - {label: "p_android", name: p_android, widget: string}
+          - {label: "p_windows", name: p_windows, widget: string}
+          - {label: "Page Soutenir : titre", name: support_title, widget: string}
+          - {label: "Page Soutenir : texte", name: support_text, widget: text}
+          - {label: "Bouton de don", name: coffee, widget: string}
+          - {label: "Pied de page", name: footer, widget: string}
+          - {label: "nav_license", name: nav_license, widget: string}
+          - {label: "Licence : titre", name: license_title, widget: string}
+          - {label: "Licence : introduction", name: license_lead, widget: text}
+          - {label: "Lien vers la licence (fiches d'outils)", name: license_link, widget: string}
+          - {label: "Badge Nouveau", name: new, widget: string}
+          - {label: "Titre du bloc À la une", name: featured, widget: string}
+          - {label: "Pop-up de téléchargement : titre", name: thanks_title, widget: string}
+          - {label: "Pop-up de téléchargement : message", name: thanks_text, widget: text}
+          - {label: "Pop-up de téléchargement : temps libre et dons", name: thanks_free, widget: text}
+          - {label: "Pop-up : bouton Instagram", name: follow_ig, widget: string}
+          - {label: "Pop-up : bouton Fermer", name: close, widget: string}
+  - name: legal
+    label: "Pages légales"
+    files:
+      - name: legal
+        label: "Mentions légales, confidentialité, cookies, conditions"
+        file: data/legal.json
+        fields:
+          - label: "Pages"
+            name: pages
+            widget: list
+            summary: "{{fields.id}}"
+            fields:
+              - {label: "Identifiant (ne pas modifier)", name: id, widget: string}
+              - label: "Titre"
+                name: title
+                widget: object
+                fields:
+                  - {label: Français, name: fr, widget: string}
+                  - {label: English, name: en, widget: string}
+              - label: "Texte (## titre, - liste, **gras**, [mot](adresse))"
+                name: body
+                widget: object
+                fields:
+                  - {label: Français, name: fr, widget: text}
+                  - {label: English, name: en, widget: text}
+  - name: pages
+    label: "Pages d'information"
+    label_singular: "page"
+    folder: data/pages
+    create: true
+    format: json
+    extension: json
+    identifier_field: id
+    summary: "{{id}}"
+    fields:
+      - {label: "Identifiant (minuscules, sans espace)", name: id, widget: string}
+      - label: "Titre"
+        name: title
+        widget: object
+        fields:
+          - {label: Français, name: fr, widget: string}
+          - {label: "English (facultatif)", name: en, widget: string, required: false}
+      - label: "Texte (## titre, ### sous-titre, - liste, 1. étapes, > encadré, **gras**, `code`, [mot](adresse))"
+        name: body
+        widget: object
+        fields:
+          - {label: Français, name: fr, widget: text}
+          - {label: "English (facultatif)", name: en, widget: text, required: false}
+      - label: "Adresse de la page (sans espaces ni accents, ex. securite)"
+        name: slug
+        widget: object
+        required: false
+        fields:
+          - {label: Français, name: fr, widget: string, required: false}
+          - {label: English, name: en, widget: string, required: false}

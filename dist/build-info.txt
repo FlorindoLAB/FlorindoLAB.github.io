@@ -1,0 +1,6 @@
+FlorindoLAB - informations de construction
+Date : 2026-11-18T17:43:30.807Z
+Commit : inconnu
+Source des outils : dossier data/tools (7 fichier(s) : capture.json, filerenamer.json, florindoaudiosuite.json, gif-studio.json, grunge-maps.json, overlay-guides.json, relief-generator.json)
+Ancien fichier data/tools.json présent dans le dépôt : non
+Outils publiés : florindoaudiosuite = AudioSUITE by FlorindoLAB ; capture = Capture by FlorindoLAB ; filerenamer = File Renamer by FlorindoLAB ; overlay-guides = Overlay Guides by FlorindoLAB ; relief-generator = Relief Generator by FlorindoLAB ; grunge-maps = Grunge Maps by FlorindoLAB ; gif-studio = GIF Studio by FlorindoLAB
