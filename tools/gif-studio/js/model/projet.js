@@ -387,4 +387,19 @@ export function creerElement(p, genre, contenu = '') {
         graine: graineDepuis(id),
     };
 }
+/**
+ * Change l'ordre d'empilement d'un texte ou d'un élément : `rang` parmi les
+ * calques posés sur l'image (0 = tout au fond, juste au-dessus de la vidéo).
+ * Le média reste toujours dessous.
+ */
+export function deplacerCalque(p, id, rang) {
+    const medias = p.calques.filter((c) => c.type === 'media');
+    const autres = p.calques.filter((c) => c.type !== 'media');
+    const i = autres.findIndex((c) => c.id === id);
+    if (i < 0)
+        return;
+    const [c] = autres.splice(i, 1);
+    autres.splice(Math.max(0, Math.min(autres.length, Math.round(rang))), 0, c);
+    p.calques = [...medias, ...autres];
+}
 //# sourceMappingURL=projet.js.map

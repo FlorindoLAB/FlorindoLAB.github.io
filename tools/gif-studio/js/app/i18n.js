@@ -84,8 +84,10 @@ const D = {
     capture_source: ['Source :', 'Source:'],
     capture_changer: ['Changer', 'Change'],
     // frise des textes
-    frise_titre: ['Textes dans le temps', 'Text timing'],
-    frise_aide: ['Glissez une barre pour déplacer le texte dans le temps, ses bords pour l\u2019allonger. Cliquez à côté pour vous placer.', 'Drag a bar to move the text in time, its edges to lengthen it. Click elsewhere to move the playhead.'],
+    avancer: ['Mettre devant (le calque passe au-dessus)', 'Bring forward'],
+    reculer: ['Mettre derrière (le calque passe en dessous)', 'Send backward'],
+    frise_titre: ['Calques dans le temps (le plus haut est devant)', 'Layers over time (top is in front)'],
+    frise_aide: ['Glissez une barre à gauche ou à droite pour la déplacer dans le temps, vers le haut ou le bas pour la passer devant ou derrière. Ses bords règlent la durée. Cliquez à côté pour vous placer.', 'Drag a bar left or right to move it in time, up or down to bring it forward or send it back. Its edges set the duration. Click elsewhere to move the playhead.'],
     temps_texte: ['Affiché de {0} à {1}', 'Shown from {0} to {1}'],
     tout_le_gif: ['Tout le GIF', 'Whole GIF'],
     enchainer: ['Texte suivant', 'Next text'],

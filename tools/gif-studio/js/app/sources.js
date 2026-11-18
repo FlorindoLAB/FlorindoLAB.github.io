@@ -90,7 +90,10 @@ export async function telechargerLien(texte, surProgression, signal) {
 // ---------------------------------------------------------------- capture d'écran
 export const captureDisponible = () => typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getDisplayMedia && typeof MediaRecorder !== 'undefined';
 function typeEnregistrement() {
-    const candidats = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4;codecs=avc1', 'video/mp4'];
+    // H.264 d'abord : encodé par la carte graphique quand elle le permet, donc bien
+    // plus léger pour la machine pendant la lecture de la vidéo enregistrée.
+    // VP9 en dernier : son encodage logiciel est lourd et fait saccader.
+    const candidats = ['video/webm;codecs=h264', 'video/mp4;codecs=avc1', 'video/webm;codecs=vp8', 'video/webm', 'video/webm;codecs=vp9', 'video/mp4'];
     return candidats.find((t) => MediaRecorder.isTypeSupported(t)) ?? '';
 }
 export const DUREE_MAX_CAPTURE_MS = 60_000;
@@ -114,7 +117,8 @@ export class Enregistrement {
             // `displaySurface` ouvre directement la bonne rubrique (Chrome, Edge).
             // Firefox liste fenêtres et écrans ; Safari propose fenêtre ou écran.
             this.flux = await navigator.mediaDevices.getDisplayMedia({
-                video: { frameRate: { ideal: 30, max: 30 }, displaySurface: surface },
+                // 720p suffit largement pour un GIF (480 à 800 px) et allège la capture.
+                video: { frameRate: { ideal: 30, max: 30 }, width: { max: 1280 }, height: { max: 720 }, displaySurface: surface },
                 audio: false,
                 selfBrowserSurface: 'exclude',
                 surfaceSwitching: 'include',
@@ -126,7 +130,7 @@ export class Enregistrement {
             throw new ErreurSource(nom === 'NotAllowedError' || nom === 'AbortError' ? 'CAPTURE_REFUSEE' : 'CAPTURE_INDISPONIBLE');
         }
         const mimeType = typeEnregistrement();
-        this.recorder = new MediaRecorder(this.flux, { ...(mimeType ? { mimeType } : {}), videoBitsPerSecond: 8_000_000 });
+        this.recorder = new MediaRecorder(this.flux, { ...(mimeType ? { mimeType } : {}), videoBitsPerSecond: 5_000_000 });
         this.morceaux = [];
         this.fin = new Promise((ok, ko) => {
             this.recorder.ondataavailable = (e) => { if (e.data.size)
