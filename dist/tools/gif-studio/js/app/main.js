@@ -6,7 +6,7 @@
  * même moteur de rendu.
  */
 import { instantApercu, tempsSource } from '../anim/temps.js';
-import { CADENCES, EXPORT_EXPRESS, EXPORT_QUALITE_SUP, STYLES, calquePrincipal, changerFormat, creerCalqueMedia, creerCalqueTexte, creerProjet, deplacerRecadrage, definirTempsTexte, dimensionsSortie, enchainerTexte, fixe, synchroniserDuree, COTE_SCENE, appliquerRecadrage, creerElement, recadrageCouvrant, rgba, EMOJIS, RATIOS, SYMBOLES, } from '../model/projet.js';
+import { CADENCES, EXPORT_EXPRESS, EXPORT_QUALITE_SUP, STYLES, calquePrincipal, changerFormat, creerCalqueMedia, creerCalqueTexte, creerProjet, deplacerRecadrage, definirTempsTexte, dimensionsSortie, enchainerTexte, fixe, synchroniserDuree, COTE_SCENE, appliquerRecadrage, creerElement, deplacerCalque, recadrageCouvrant, rgba, EMOJIS, RATIOS, SYMBOLES, } from '../model/projet.js';
 import { rasteriserElement } from '../render/elements.js';
 import { signalerPolicesChargees } from '../render/texte.js';
 import { DEFINITIONS } from '../render/filtres.js';
@@ -17,7 +17,7 @@ import { definirLangue, langueCourante, langueInitiale, nombre, poids, t, tradui
 import { ErreurImport, RegistreMedias } from './medias.js';
 import { definirFichier, demanderPersistance, effacerSession, lireSession, planifierSauvegarde } from './session.js';
 import { captureDisponible, Enregistrement, ErreurSource, telechargerLien } from './sources.js';
-export const VERSION = '1.0.0-beta';
+export const VERSION = '1.0.1-beta';
 const DUREE_MIN_MS = 200;
 const DUREE_MAX_MS = 15000;
 const DUREE_ALERTE_MS = 6000;
@@ -93,7 +93,7 @@ function retablir() { if (projet && futur.length) {
     majHistorique();
 } }
 // ================================================================ ouverture
-async function ouvrirFichier(f) {
+async function ouvrirFichier(f, depuisCapture = false) {
     $('texte-chargement').textContent = t('chargement');
     $('chargement').hidden = false;
     try {
@@ -103,7 +103,7 @@ async function ouvrirFichier(f) {
             for (const id of Object.keys(ancien.medias))
                 registre.liberer(id);
         definirFichier(f);
-        nouveauProjet(ref);
+        nouveauProjet(ref, undefined, depuisCapture);
     }
     catch (e) {
         toast(e instanceof ErreurImport ? e.message : 'format_inconnu');
@@ -152,7 +152,7 @@ async function lancerCapture(surface = 'browser') {
             try {
                 const f = await fin;
                 if (!annule)
-                    await ouvrirFichier(f);
+                    await ouvrirFichier(f, true);
             }
             catch (err) {
                 if (!annule)
@@ -200,7 +200,7 @@ async function lancerCapture(surface = 'browser') {
         lancerCapture(surface);
     };
 }
-function nouveauProjet(ref, sauve) {
+function nouveauProjet(ref, sauve, depuisCapture = false) {
     if (sauve) {
         // Session reprise : le média a un nouvel identifiant.
         const ancienId = Object.keys(sauve.medias)[0];
@@ -216,8 +216,12 @@ function nouveauProjet(ref, sauve) {
         projet.medias[ref.id] = ref;
         projet.express = { format: 'origine', filtre: 'aucun' };
         const m = creerCalqueMedia(projet, ref);
-        if (ref.type === 'video')
-            m.decoupe = { entreeMs: 0, sortieMs: Math.min(ref.dureeMs, 3000) };
+        if (ref.type === 'video') {
+            // Après un enregistrement, le moment voulu est en général juste avant l'arrêt :
+            // on présélectionne les 3 dernières secondes (moins le temps de cliquer sur Arrêter).
+            const fin = depuisCapture ? Math.max(Math.min(ref.dureeMs, 3000), ref.dureeMs - 400) : Math.min(ref.dureeMs, 3000);
+            m.decoupe = { entreeMs: Math.max(0, fin - 3000), sortieMs: fin };
+        }
         projet.calques.push(m);
         synchroniserDuree(projet, 3000);
         projet.calques.push(creerCalqueTexte(projet, '', 'CLASSIQUE', 'bas'));
@@ -610,8 +614,9 @@ function majFrise() {
         return;
     const D = projet.scene.dureeMs;
     const voies = $('frise-voies');
-    const liste = superposes();
-    let n = 0;
+    // Le calque le plus haut sur la frise est celui qui est devant (comme dans un logiciel de montage).
+    const liste = superposes().slice().reverse();
+    const numeros = new Map(textes().map((x, k) => [x.id, k + 1]));
     // Reconstruction légère : quelques barres au plus.
     voies.innerHTML = '';
     liste.forEach((tx, i) => {
@@ -623,7 +628,9 @@ function majFrise() {
         b.style.left = `${(tx.debutMs / D) * 100}%`;
         b.style.width = `${((tx.finMs - tx.debutMs) / D) * 100}%`;
         void i;
-        b.textContent = tx.type === 'texte' ? tx.contenu.trim() || t('texte_n', ++n) : nomElement(tx);
+        b.textContent = tx.type === 'texte' ? tx.contenu.trim() || t('texte_n', numeros.get(tx.id) ?? 1) : nomElement(tx);
+        if (tx.id === enOrdre)
+            b.classList.add('deplacee');
         if (tx.type === 'element')
             b.classList.add('element');
         b.title = `${b.textContent} · ${tempsCourt(tx.debutMs)} → ${tempsCourt(tx.finMs)}`;
@@ -638,6 +645,26 @@ function majFrise() {
         voies.append(voie);
     });
     $('frise').hidden = liste.length === 0;
+    const rang = liste.findIndex((x) => x.id === selection);
+    $('btn-avancer').disabled = rang <= 0;
+    $('btn-reculer').disabled = rang < 0 || rang >= liste.length - 1;
+}
+/** Calque en cours de déplacement vertical sur la frise (mis en évidence). */
+let enOrdre = null;
+/** Passe le calque choisi devant (+1) ou derrière (-1) d'un cran. */
+function changerPlan(sens) {
+    if (!projet || !selection)
+        return;
+    const liste = superposes();
+    const i = liste.findIndex((c) => c.id === selection);
+    if (i < 0)
+        return;
+    const cible = i + sens;
+    if (cible < 0 || cible >= liste.length)
+        return;
+    memoriser();
+    deplacerCalque(projet, selection, cible);
+    changement();
 }
 function majTeteFrise(tMs) {
     if (!projet)
@@ -680,13 +707,13 @@ function brancherFrise() {
             selection = tx.id;
             fermerSelecteurs();
             const mode = cible.dataset.bord ?? 'tout';
-            geste = { mode, id: tx.id, x0: e.clientX, d0: tx.debutMs, f0: tx.finMs, largeur: rect.width };
+            geste = { mode, id: tx.id, x0: e.clientX, y0: e.clientY, d0: tx.debutMs, f0: tx.finMs, largeur: rect.width, decide: mode !== 'tout' };
             allerA(mode === 'd' ? tx.finMs - 1 : tx.debutMs);
             majPanneau();
         }
         else {
             // Clic hors des barres : on déplace la tête de lecture.
-            geste = { mode: 'tete', x0: e.clientX, d0: 0, f0: 0, largeur: rect.width };
+            geste = { mode: 'tete', x0: e.clientX, y0: e.clientY, d0: 0, f0: 0, largeur: rect.width, decide: true };
             allerA(versMs(e.clientX - rect.left, rect.width));
         }
     });
@@ -701,6 +728,32 @@ function brancherFrise() {
         const tx = superposes().find((x) => x.id === geste.id);
         if (!tx)
             return;
+        // Une barre tirée surtout verticalement change l'ordre des calques au lieu du temps.
+        if (!geste.decide) {
+            const dx = Math.abs(e.clientX - geste.x0), dy = Math.abs(e.clientY - geste.y0);
+            if (dy > 10 && dy > dx * 1.2) {
+                geste.mode = 'ordre';
+                geste.decide = true;
+                enOrdre = tx.id;
+                corps.classList.add('ordre');
+            }
+            else if (dx > 6)
+                geste.decide = true;
+            else
+                return;
+        }
+        if (geste.mode === 'ordre') {
+            const voies = Array.from($('frise-voies').children);
+            let ligne = voies.findIndex((v) => { const r = v.getBoundingClientRect(); return e.clientY < r.bottom; });
+            if (ligne < 0)
+                ligne = voies.length - 1;
+            const rang = voies.length - 1 - ligne; // la frise est inversée : en haut = devant
+            if (superposes().findIndex((c) => c.id === tx.id) !== rang) {
+                deplacerCalque(projet, tx.id, rang);
+                majFrise();
+            }
+            return;
+        }
         const dt = versMs(e.clientX - geste.x0, geste.largeur);
         if (geste.mode === 'g') {
             definirTempsTexte(projet, tx, aimanter(geste.d0 + dt, tx.id, geste.largeur), geste.f0);
@@ -730,11 +783,15 @@ function brancherFrise() {
             return;
         const modif = geste.mode !== 'tete';
         geste = null;
+        enOrdre = null;
+        corps.classList.remove('ordre');
         if (modif)
             changement();
     };
     corps.addEventListener('pointerup', fin);
     corps.addEventListener('pointercancel', fin);
+    $('btn-avancer').onclick = () => changerPlan(1);
+    $('btn-reculer').onclick = () => changerPlan(-1);
 }
 function majTempsTexte() {
     const tx = choisi();
@@ -1797,6 +1854,14 @@ function brancher() {
         else if (e.key === ' ') {
             e.preventDefault();
             basculerLecture();
+        }
+        else if (e.key === 'PageUp' && selection) {
+            e.preventDefault();
+            changerPlan(1);
+        }
+        else if (e.key === 'PageDown' && selection) {
+            e.preventDefault();
+            changerPlan(-1);
         }
         else if ((e.key === 'Delete' || e.key === 'Backspace') && selection && !recadrage) {
             e.preventDefault();
